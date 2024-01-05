@@ -18,8 +18,6 @@ in
     myRetroarch
     airshipper
     qjoypad
-    superTux
-    superTuxKart
   ];
 
   nixpkgs.config = {

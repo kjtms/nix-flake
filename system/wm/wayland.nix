@@ -15,9 +15,16 @@
     layout = "us";
     xkbVariant = "";
     xkbOptions = "caps:escape";
+    videoDrivers = [ "nvidia" ];
     displayManager.gdm = {
       enable = true;
       wayland = true;
     };
+  };
+
+  # Nvidia is the worst company on earth
+  hardware.nvidia = {
+    nvidiaSettings = true;
+    modesetting.enable = true;
   };
 }

@@ -1,4 +1,4 @@
-{ config, lib, pkgs, stdenv, fetchurl, nix-doom-emacs, stylix, username, email, dotfilesDir, theme, wm, browser, editor, spawnEditor, term, ... }:
+{ config, lib, pkgs, stdenv, fetchurl, nix-doom-emacs, stylix, username, email, dotfilesDir, theme, wm, browser, editor, spawnEditor, term, timezone, ... }:
 
 {
   # Home Manager needs a bit of information about you and the paths it should
@@ -17,14 +17,15 @@
               ../../user/bin/phoenix.nix # My nix command wrapper
               ../../user/app/doom-emacs/doom.nix # My doom emacs config
               ../../user/app/ranger/ranger.nix # My ranger file manager config
+              ../../user/app/games/games.nix # various videogame apps
               ../../user/app/git/git.nix # My git config
               ../../user/app/keepass/keepass.nix # My password manager
               (./. + "../../../user/app/browser"+("/"+browser)+".nix") # My default browser selected from flake
               ../../user/app/virtualization/virtualization.nix # Virtual machines
               ../../user/app/flatpak/flatpak.nix # Flatpaks
               ../../user/style/stylix.nix # Styling and themes for my apps
-              ../../user/lang/cc/cc.nix # C and C++ tools
-              ../../user/lang/godot/godot.nix # Game development
+              #../../user/lang/cc/cc.nix # C and C++ tools
+              #../../user/lang/godot/godot.nix # Game development
               ../../user/pkgs/blockbench.nix # Blockbench
               ../../user/hardware/bluetooth.nix # Bluetooth
             ];
@@ -53,6 +54,8 @@
     gnome.gnome-calendar
     gnome.seahorse
     gnome.gnome-maps
+    gnome.gnome-disk-utility
+    gparted
     openvpn
     protonmail-bridge
     texliveSmall
@@ -97,18 +100,14 @@
     #blockbench-electron
     cura
     obs-studio
-    #install kdenlive via flatpak due to missing plugins
-    #kdenlive
     ffmpeg
-    (pkgs.writeScriptBin "kdenlive-accel" ''
-      #!/bin/sh
-      DRI_PRIME=0 flatpak run org.kde.kdenlive "$1"
-    '')
     movit
     mediainfo
     libmediainfo
     mediainfo-gui
     audio-recorder
+    qbittorrent
+    gtkcord4
 
     # Various dev packages
     texinfo
@@ -137,6 +136,9 @@
       XDG_ORG_DIR = "${config.home.homeDirectory}/Org";
       XDG_PODCAST_DIR = "${config.home.homeDirectory}/Media/Podcasts";
       XDG_BOOK_DIR = "${config.home.homeDirectory}/Media/Books";
+      XDG_MOVIES_DIR = "${config.home.homeDirectory}/Media/Movies";
+      XDG_GAME_DIR = "${config.home.homeDirectory}/Media/Games";
+      XDG_GAME_SAVE_DIR = "${config.home.homeDirectory}/Media/Game Saves";
     };
   };
   xdg.mime.enable = true;

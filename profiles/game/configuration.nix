@@ -9,11 +9,16 @@
       ../../system/hardware/systemd.nix # systemd config
       ../../system/hardware/kernel.nix # Kernel config
       ../../system/hardware/power.nix # Power management
+      #../../system/hardware/openrgb.nix
       ../../system/hardware/opengl.nix
       ../../system/hardware/printing.nix
       ../../system/hardware/bluetooth.nix
       (./. + "../../../system/wm"+("/"+wm)+".nix") # My window manager
+      #( import ../../system/app/docker.nix {storageDriver = "btrfs"; inherit username pkgs config lib;} )
       ../../system/app/flatpak.nix
+      ../../system/app/gamemode.nix
+      ../../system/app/steam.nix
+      ../../system/app/prismlauncher.nix
       ../../system/app/virtualization.nix
       ../../system/security/doas.nix
       ../../system/security/gpg.nix
@@ -45,7 +50,7 @@
   # Bootloader
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
-  boot.loader.efi.efiSysMountPoint = "/boot/efi";
+  boot.loader.efi.efiSysMountPoint = "/boot";
 
   # Networking
   networking.hostName = hostname; # Define your hostname.
@@ -83,6 +88,7 @@
     git
     cryptsetup
     home-manager
+    xfce.thunar
   ];
 
   # I use zsh btw

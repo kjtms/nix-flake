@@ -1,27 +1,27 @@
 {
-  description = "Flake of LibrePhoenix";
+  description = "Help! oh God, oh please help me!";
 
   outputs = { self, nixpkgs, home-manager, nix-doom-emacs, stylix, eaf, eaf-browser, org-nursery, org-yaap, org-timeblock, phscroll, blocklist-hosts, rust-overlay, hyprland-plugins, ... }@inputs:
   let
     # ---- SYSTEM SETTINGS ---- #
     system = "x86_64-linux"; # system arch
-    hostname = "snowfire"; # hostname
-    profile = "personal"; # select a profile defined from my profiles directory
-    timezone = "America/Chicago"; # select timezone
+    hostname = "Bohrium"; # hostname
+    profile = "game"; # select a profile defined from my profiles directory
+    timezone = "Europe/Copenhagen"; # select timezone
     locale = "en_US.UTF-8"; # select locale
 
     # ----- USER SETTINGS ----- #
-    username = "emmet"; # username
-    name = "Emmet"; # name/identifier
-    email = "emmet@librephoenix.com"; # email (used for certain configurations)
+    username = "kjat"; # username
+    name = "kjtms"; # name/identifier
+    email = "kjatten@proton.me"; # email (used for certain configurations)
     dotfilesDir = "~/.dotfiles"; # absolute path of the local repo
-    theme = "uwunicorn"; # selcted theme from my themes directory (./themes/)
+    theme = "henna"; # selcted theme from my themes directory (./themes/)
     wm = "hyprland"; # Selected window manager or desktop environment; must select one in both ./user/wm/ and ./system/wm/
     wmType = "wayland"; # x11 or wayland
-    browser = "qutebrowser"; # Default browser; must select one from ./user/app/browser/
+    browser = "librewolf"; # Default browser; must select one from ./user/app/browser/
     editor = "emacsclient"; # Default editor;
     defaultRoamDir = "Personal.p"; # Default org roam directory relative to ~/Org
-    term = "alacritty"; # Default terminal command;
+    term = "kitty"; # Default terminal command;
     font = "Intel One Mono"; # Selected font
     fontPkg = pkgs.intel-one-mono; # Font package
 
@@ -74,6 +74,7 @@
             inherit editor;
             inherit term;
             inherit spawnEditor;
+            inherit timezone;
             inherit (inputs) nix-doom-emacs;
             inherit (inputs) stylix;
             inherit (inputs) eaf;
@@ -150,6 +151,14 @@
     };
     hyprland-plugins = {
       url = "github:hyprwm/hyprland-plugins";
+      flake = false;
+    };
+    flake-parts = {
+      url = "github:hercules-ci/flake-parts";
+      flake = false;
+    };
+    ags = {
+      url = "github:Aylur/ags";
       flake = false;
     };
   };

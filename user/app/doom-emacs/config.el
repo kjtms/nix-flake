@@ -98,7 +98,6 @@
 (setq dashboard-items '())
 (setq dashboard-center-content t)
 (setq dashboard-footer-messages '("Here to do customizing, or actual work?"
-                                  "M-x insert-inspiring-message"
                                   "My software never has bugs. It just develops random features."
                                   "Dad, what are clouds made of? Linux servers, mostly."
                                   "There is no place like ~"
