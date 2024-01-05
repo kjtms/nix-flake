@@ -6,7 +6,7 @@
     # ---- SYSTEM SETTINGS ---- #
     system = "x86_64-linux"; # system arch
     hostname = "Bohrium"; # hostname
-    profile = "game"; # select a profile defined from my profiles directory
+    profile = "master"; # select a profile defined from my profiles directory
     timezone = "Europe/Copenhagen"; # select timezone
     locale = "en_US.UTF-8"; # select locale
 

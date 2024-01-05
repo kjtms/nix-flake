@@ -106,7 +106,7 @@
     libmediainfo
     mediainfo-gui
     audio-recorder
-    qbittorrent
+    deluge # TODO make deluge config a seperate .nix file under /app
     gtkcord4
 
     # Various dev packages
