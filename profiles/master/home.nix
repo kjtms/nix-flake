@@ -24,6 +24,7 @@
               ../../user/app/virtualization/virtualization.nix # Virtual machines
               ../../user/app/flatpak/flatpak.nix # Flatpaks
               ../../user/style/stylix.nix # Styling and themes for my apps
+              ../../user/lang/android/android.nix
               #../../user/lang/cc/cc.nix # C and C++ tools
               #../../user/lang/godot/godot.nix # Game development
               ../../user/pkgs/blockbench.nix # Blockbench
@@ -54,7 +55,6 @@
     gnome.gnome-calendar
     gnome.seahorse
     gnome.gnome-maps
-    gnome.gnome-disk-utility
     gparted
     openvpn
     protonmail-bridge

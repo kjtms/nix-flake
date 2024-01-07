@@ -30,12 +30,13 @@
         ("hyprctl setcursor" + config.gtk.cursorTheme.name + builtins.toString config.gtk.cursorTheme.size)
         "pypr"
         "nm-applet"
+        "STEAM_FRAME_FORCE_CLOSE=1 steam -silent"
         "blueman-applet"
         "GOMAXPROCS=1 syncthing --no-browser"
         "protonmail-bridge --noninteractive"
         "waybar"
         "emacs --daemon"
-        "swayidle -w timeout 1700 '${pkgs.swaylock}/bin/swaylock'"
+        "swayidle -w timeout 1700 '${pkgs.swaylock}/bin/swaylock -f'"
       ];
 
       exec = "~/.swaybg-stylix";

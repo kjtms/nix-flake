@@ -15,7 +15,7 @@
     name = "kjtms"; # name/identifier
     email = "kjatten@proton.me"; # email (used for certain configurations)
     dotfilesDir = "~/.dotfiles"; # absolute path of the local repo
-    theme = "henna"; # selcted theme from my themes directory (./themes/)
+    theme = "atelier-sulphurpool"; # selcted theme from my themes directory (./themes/)
     wm = "hyprland"; # Selected window manager or desktop environment; must select one in both ./user/wm/ and ./system/wm/
     wmType = "wayland"; # x11 or wayland
     browser = "librewolf"; # Default browser; must select one from ./user/app/browser/
@@ -36,8 +36,10 @@
     nixpkgs-patched = (import nixpkgs { inherit system; }).applyPatches {
       name = "nixpkgs-patched";
       src = nixpkgs;
-      patches = [ ./patches/emacs-no-version-check.patch
-                  ./patches/nixos-nixpkgs-268027.patch ];
+      patches = [
+                  ./patches/emacs-no-version-check.patch
+                  ./patches/nixos-nixpkgs-268027.patch
+                ];
     };
 
     # configure pkgs
@@ -55,7 +57,9 @@
     homeConfigurations = {
       user = home-manager.lib.homeManagerConfiguration {
           inherit pkgs;
-          modules = [ (./. + "/profiles"+("/"+profile)+"/home.nix") ]; # load home.nix from selected PROFILE
+          modules = [ (./. + "/profiles"+("/"+profile)+"/home.nix") # load home.nix from selected PROFILE
+                      #   inputs.nix-flatpak.homeManagerModules.nix-flatpak # Declarative flatpaks
+                    ];
           extraSpecialArgs = {
             # pass config variables from above
             inherit username;
@@ -76,6 +80,7 @@
             inherit spawnEditor;
             inherit timezone;
             inherit (inputs) nix-doom-emacs;
+            #inherit (inputs) nix-flatpak;
             inherit (inputs) stylix;
             inherit (inputs) eaf;
             inherit (inputs) eaf-browser;
@@ -117,6 +122,7 @@
     nix-doom-emacs.url = "github:librephoenix/nix-doom-emacs?ref=pgtk-patch";
     stylix.url = "github:danth/stylix";
     rust-overlay.url = "github:oxalica/rust-overlay";
+    #nix-flatpak.url = "github:gmodena/nix-flatpak/?ref=v0.2.0";
     eaf = {
       url = "github:emacs-eaf/emacs-application-framework";
       flake = false;

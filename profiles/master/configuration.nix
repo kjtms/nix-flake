@@ -13,6 +13,7 @@
       ../../system/hardware/opengl.nix
       ../../system/hardware/printing.nix
       ../../system/hardware/bluetooth.nix
+      ../../system/hardware/time.nix
       (./. + "../../../system/wm"+("/"+wm)+".nix") # My window manager
       #( import ../../system/app/docker.nix {storageDriver = "btrfs"; inherit username pkgs config lib;} )
       ../../system/app/flatpak.nix
