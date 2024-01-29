@@ -5,5 +5,6 @@
     # Android
     android-tools
     android-udev-rules
+    android-studio
   ];
 }

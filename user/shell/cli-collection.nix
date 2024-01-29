@@ -15,6 +15,8 @@
     htop
     hwinfo
     unzip
+    unrar
+    p7zip
     octave
     brightnessctl
     w3m

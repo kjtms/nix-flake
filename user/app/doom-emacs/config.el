@@ -117,9 +117,9 @@
     ;; line 2
     ( (,"Git" "" "" (lambda (&rest _)) 'diredfl-exec-priv)
      (,(all-the-icons-octicon "mark-github" :height 1.0 :v-adjust 0.0)
-       "GitHub" "" (lambda (&rest _) (browse-url "ext+container:name=Tech&url=https://github.com/librephoenix")) 'diredfl-exec-priv)
+       "GitHub" "" (lambda (&rest _) (browse-url "ext+container:name=Tech&url=https://github.com/kjtms")) 'diredfl-exec-priv)
      (,(all-the-icons-faicon "gitlab" :height 1.0 :v-adjust 0.0)
-       "GitLab" "" (lambda (&rest _) (browse-url "ext+container:name=Tech&url=https://gitlab.com/librephoenix")) 'diredfl-exec-priv)
+       "GitLab" "" (lambda (&rest _) (browse-url "ext+container:name=Tech&url=https://gitlab.com/kjtms")) 'diredfl-exec-priv)
      (,(all-the-icons-faicon "coffee" :height 1.0 :v-adjust 0.0)
        "Gitea" "" (lambda (&rest _) (browse-url my-gitea-domain)) 'diredfl-exec-priv)
     )

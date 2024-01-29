@@ -37,13 +37,10 @@
     # Core
     zsh
     alacritty
-    librewolf
     brave
-    qutebrowser
-    dmenu
-    rofi
     git
     syncthing
+    floorp
 
     # Office
     libreoffice-fresh
@@ -52,13 +49,12 @@
     glib
     newsflash
     gnome.nautilus
-    gnome.gnome-calendar
     gnome.seahorse
     gnome.gnome-maps
     gparted
-    openvpn
     protonmail-bridge
-    texliveSmall
+    thunderbird
+    #logseq #obsidian alternative
 
     wine
     bottles
@@ -88,33 +84,30 @@
 
     # Media
     gimp-with-plugins
-    pinta
     krita
     inkscape
     musikcube
-    vlc
     mpv
     yt-dlp
     #freetube
     blender
     #blockbench-electron
-    cura
-    obs-studio
+    #cura
+    #obs-studio
     ffmpeg
     movit
     mediainfo
     libmediainfo
     mediainfo-gui
     audio-recorder
-    deluge # TODO make deluge config a seperate .nix file under /app
-    gtkcord4
-
-    # Various dev packages
-    texinfo
-    libffi zlib
-    nodePackages.ungit
+    deluge # TODO make deluge config a seperate .nix file under /app, a lot of customizing to be done
+    armcord
+    etcher
   ];
 
+  nixpkgs.config.permittedInsecurePackages = [
+    "electron-19.1.9"
+  ];
   services.syncthing.enable = true;
 
   xdg.enable = true;

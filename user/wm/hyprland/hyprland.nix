@@ -1,4 +1,4 @@
-{ config, lib, pkgs, stdenv, toString, browser, term, spawnEditor, font, hyprland-plugins, timezone, ... }:
+{ config, lib, pkgs, stdenv, toString, ags, browser, term, spawnEditor, font, hyprland-plugins, timezone, ... }:
 
 # Hyprland ahead! Here ye must define settins'- in nix no less, yargh!
 {
@@ -10,13 +10,20 @@
       inherit config lib pkgs;
     })
     ./lib/waybar.nix
-
+    ./lib/eww/eww.nix
+    ./lib/swaylock.nix
+   #ags
   ];
   gtk.cursorTheme = {
     package = pkgs.bibata-cursors;
     name = if (config.stylix.polarity == "light") then "Bibata-Modern-Classic" else "Bibata-Modern-Ice";
     size = 24;
   };
+
+# programs.ags = {
+#   enable = true;
+#   configDir = ./lib/ags;
+# };
 
   wayland.windowManager.hyprland = {
     enable = true;
@@ -30,13 +37,13 @@
         ("hyprctl setcursor" + config.gtk.cursorTheme.name + builtins.toString config.gtk.cursorTheme.size)
         "pypr"
         "nm-applet"
-        "STEAM_FRAME_FORCE_CLOSE=1 steam -silent"
+        "STEAM_FRAME_FORCE_CLOSE=1 SDL_VIDEODRIVER=x11 steam -silent"
         "blueman-applet"
         "GOMAXPROCS=1 syncthing --no-browser"
         "protonmail-bridge --noninteractive"
         "waybar"
         "emacs --daemon"
-        "swayidle -w timeout 1700 '${pkgs.swaylock}/bin/swaylock -f'"
+        "swayidle -w timeout 120 'swaylock -f'"
       ];
 
       exec = "~/.swaybg-stylix";
@@ -45,17 +52,17 @@
         layout = "dwindle";
         resize_on_border = true;
         cursor_inactive_timeout = 30;
-        border_size = 4;
+        border_size = 3;
         no_cursor_warps = false;
         "col.active_border" = "0xff" + config.lib.stylix.colors.base08;
-        "col.inactive_border" = "0x33" + config.lib.stylix.colors.base00;
+        "col.inactive_border" = "0xff" + config.lib.stylix.colors.base00;
 
         gaps_in = 7;
         gaps_out = 7;
       };
 
       decoration = {
-        rounding = 15;
+        rounding = 10;
         blur = {
           size = 6;
           passes = 3;
@@ -83,6 +90,7 @@
         force_no_accel = true;
         kb_layout = "us";
         kb_options = "caps:escape";
+        numlock_by_default = true;
         repeat_delay = 350;
         repeat_rate = 50;
         follow_mouse = 1;
@@ -92,6 +100,8 @@
       };
 
       xwayland.force_zero_scaling = true;
+
+     #opengl.nvidia_anti_flicker = true;
 
       misc = {
         disable_hyprland_logo = true;
@@ -170,7 +180,7 @@
 
         # Browse the seas
        ("$mod,          S,          exec," + browser)
-        "$modCTRL,      S,          exec, container-open"
+        "$modCTRL,      S,          exec, container-open" # this one only works for qutebrowser
 
         "$mod,          SEMICOLON,  exec, fuzzel"
         "$mod,          X,          exec, fnottctl dismiss"
@@ -186,18 +196,11 @@
         # Media keys to navigate the soundwaves. Get it? soundWAVES, like the theme is pirate speak and they-
         ",              xf86audiolowervolume, exec, pamixer -d 5"
         ",              xf86audioraisevolume, exec, pamixer -i 5"
-        ",              code:121,             exec, pamixer -t"
-        ",              code:256,             exec, pamixer --default-source -t"
-        "SHIFT,         code:122,             exec, pamixer --default-source -d 5"
-        "SHIFT,         code:123,             exec, pamixer --default-source -i 5"
+        ",              xf86audioplay,        exec, playerctl play-pause"
+        ",              xf86audionext,        exec, playerctl next"
+        ",              xf86audioprev,        exec, playerctl prev"
         ",              code:232,             exec, brightnessctl set 15-"
         ",              code:233,             exec, brightnessctl set +15"
-        ",              code:255,             exec, airplane-mode"
-
-        "$modCTRL,      L,          exec, gtklock -d"
-
-        "$mod,          code:21,    exec, pypr zoom"
-        "$mod,          code:21,    exec, hyprctl reload"
 
         "$mod,          I,          exec, networkmanager_dmenu"
 
@@ -319,10 +322,6 @@
         "opacity 0.90,class:^(org.keepassxc.KeePassXC)$"
       ];
 
-      layerrule = [
-        "blur,waybar"
-      ];
-
     };
   };
   home.packages = with pkgs; [
@@ -340,17 +339,6 @@
     hyprland-protocols
     hyprpicker
     swayidle
-    gtklock
-    #swaylock
-    #(pkgs.swaylock-effects.overrideAttrs (oldAttrs: {
-    #  version = "1.6.4-1";
-    #  src = fetchFromGitHub {
-    #    owner = "mortie";
-    #    repo = "swaylock-effects";
-    #    rev = "20ecc6a0a5b61bb1a66cfb513bc357f74d040868";
-    #    sha256 = "sha256-nYA8W7iabaepiIsxDrCkG/WIFNrVdubk/AtFhIvYJB8=";
-    #  };
-    #}))
     swaybg
     fnott
     #hyprpaper
@@ -370,6 +358,7 @@
     wlsunset
     pavucontrol
     pamixer
+    playerctl
     (pkgs.writeScriptBin "sct" ''
       #!/bin/sh
       killall wlsunset &> /dev/null;
@@ -380,11 +369,6 @@
       else
         killall wlsunset &> /dev/null;
       fi
-    '')
-    (pkgs.writeScriptBin "suspend-unless-render" ''
-      #!/bin/sh
-      if pgrep -x nixos-rebuild > /dev/null || pgrep -x home-manager > /dev/null || pgrep -x kdenlive > /dev/null || pgrep -x FL64.exe > /dev/null || pgrep -x blender > /dev/null || pgrep -x flatpak > /dev/null;
-      then echo "Shouldn't suspend"; sleep 10; else echo "Should suspend"; systemctl suspend; fi
     '')
     (pkgs.writeScriptBin "hyprworkspace" ''
       #!/bin/sh
@@ -438,18 +422,22 @@
       "scratchpads": {
         "term": {
           "command": "alacritty --class scratchpad",
+          "animation": "fromBottom",
           "margin": 50
         },
         "ranger": {
           "command": "kitty --class scratchpad -e ranger",
+          "animation": "fromBottom",
           "margin": 50
         },
         "musikcube": {
           "command": "alacritty --class scratchpad -e musikcube",
+          "animation": "fromBottom",
           "margin": 50
         },
         "btm": {
           "command": "alacritty --class scratchpad -e btm",
+          "animation": "fromBottom",
           "margin": 50
         },
         "pavucontrol": {
@@ -462,20 +450,6 @@
     }
   '';
 
-
-  home.file.".config/gtklock/style.css".text = ''
-    window {
-      background-image: url("''+config.stylix.image+''");
-      background-size: auto 100%;
-    }
-  '';
-
-  programs.swaylock = {
-    enable = true;
-    settings = {
-      color = "#"+config.lib.stylix.colors.base00;
-    };
-  };
 
   programs.fuzzel = {
     enable = true;

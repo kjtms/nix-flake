@@ -18,8 +18,7 @@
       #( import ../../system/app/docker.nix {storageDriver = "btrfs"; inherit username pkgs config lib;} )
       ../../system/app/flatpak.nix
       ../../system/app/gamemode.nix
-      ../../system/app/steam.nix
-      ../../system/app/prismlauncher.nix
+      ../../system/app/games.nix
       ../../system/app/virtualization.nix
       ../../system/security/doas.nix
       ../../system/security/gpg.nix
@@ -29,9 +28,16 @@
       ../../system/security/openvpn.nix
       ../../system/style/stylix.nix
     ];
+  users.users.nixosvmtest = {
+    isSystemUser = true;
+    initialPassword = "true";
+    group = "nixosvmtest";
+  };
+  users.groups.nixosvmtest = {};
 
   # Fix nix path
-  nix.nixPath = [ "nixpkgs=/nix/var/nix/profiles/per-user/root/channels/nixos"
+  nix.nixPath = [
+                  "nixpkgs=/nix/var/nix/profiles/per-user/root/channels/nixos"
                   "nixos-config=$HOME/dotfiles/system/configuration.nix"
                   "/nix/var/nix/profiles/per-user/root/channels"
                 ];
