@@ -113,6 +113,7 @@
   ];
 
   nixpkgs.config.permittedInsecurePackages = [
+    "electron-22.3.27"
     "electron-19.1.9"
   ];
   services.syncthing.enable = true;

@@ -42,8 +42,8 @@
   ))
   ;; On Linux I can enable blur, however
   (funcall (lambda ()
-    (set-frame-parameter nil 'alpha-background 65)
-    (add-to-list 'default-frame-alist '(alpha-background . 65))
+    (set-frame-parameter nil 'alpha-background 75)
+    (add-to-list 'default-frame-alist '(alpha-background . 75))
   ))
 )
 
@@ -98,6 +98,7 @@
 (setq dashboard-items '())
 (setq dashboard-center-content t)
 (setq dashboard-footer-messages '("Here to do customizing, or actual work?"
+                                  "M-x insert-inspiring-message"
                                   "My software never has bugs. It just develops random features."
                                   "Dad, what are clouds made of? Linux servers, mostly."
                                   "There is no place like ~"
@@ -117,9 +118,9 @@
     ;; line 2
     ( (,"Git" "" "" (lambda (&rest _)) 'diredfl-exec-priv)
      (,(all-the-icons-octicon "mark-github" :height 1.0 :v-adjust 0.0)
-       "GitHub" "" (lambda (&rest _) (browse-url "ext+container:name=Tech&url=https://github.com/kjtms")) 'diredfl-exec-priv)
+       "GitHub" "" (lambda (&rest _) (browse-url "ext+container:name=Tech&url=https://github.com/librephoenix")) 'diredfl-exec-priv)
      (,(all-the-icons-faicon "gitlab" :height 1.0 :v-adjust 0.0)
-       "GitLab" "" (lambda (&rest _) (browse-url "ext+container:name=Tech&url=https://gitlab.com/kjtms")) 'diredfl-exec-priv)
+       "GitLab" "" (lambda (&rest _) (browse-url "ext+container:name=Tech&url=https://gitlab.com/librephoenix")) 'diredfl-exec-priv)
      (,(all-the-icons-faicon "coffee" :height 1.0 :v-adjust 0.0)
        "Gitea" "" (lambda (&rest _) (browse-url my-gitea-domain)) 'diredfl-exec-priv)
     )
@@ -555,8 +556,6 @@ same directory as the org-buffer and insert a link to this file."
   (save-buffer)
 )
 
-;; TODO make function to edit title or date post post creation
-
 (map! :leader
       :prefix ("N")
 
@@ -704,11 +703,8 @@ same directory as the org-buffer and insert a link to this file."
 )
 
 (defun org-current-buffer-has-todos ()
-  "Return non-nil if current buffer has any todo entry.
+  "Return non-nil if current buffer has any todo entry."
 
-TODO entries marked as done are ignored, meaning the this
-function returns nil if current buffer contains only completed
-tasks."
   (org-element-map                          ; (2)
        (org-element-parse-buffer 'headline) ; (1)
        'headline
@@ -781,6 +777,7 @@ tasks."
   (setq org-agenda-files (append org-agenda-files (org-roam-list-notes-by-tag "todos")))
 )
 
+;; Refreshing org roam agenda
 (defun org-roam-refresh-agenda-list ()
   (interactive)
   (setq prev-org-roam-db-choice org-roam-db-choice)
@@ -792,8 +789,19 @@ tasks."
   (org-roam-switch-db prev-org-roam-db-choice 1)
 )
 
-;; Build agenda for first time during this session
-(org-roam-refresh-agenda-list)
+;; Build agenda only when org agenda first opened for session
+(setq org-roam-agenda-initialized nil)
+(defun org-roam-refresh-agenda-list-init ()
+  (if (not org-roam-agenda-initialized)
+    (funcall
+      (lambda ()
+        (org-roam-refresh-agenda-list)
+        (setq org-roam-agenda-initialized t)
+      )
+    )
+  )
+)
+(add-hook 'org-agenda-mode-hook 'org-roam-refresh-agenda-list-init)
 
 (map! :leader
       :prefix ("o a")
@@ -902,7 +910,6 @@ tasks."
       "V" 'kill-org-roam-ui)
 
 ;;;------ Org agenda configuration ------;;;
-
 ;; Set span for agenda to be just daily
 (setq org-agenda-span 1
       org-agenda-start-day "+0d"
@@ -920,7 +927,6 @@ tasks."
   '(org-agenda-date-weekend-today :inherit outline-4 :height 1.15)
   '(org-super-agenda-header :inherit custom-button :weight bold :height 1.05)
   )
-
 
 ;; Toggle completed entries function
 (defun org-agenda-toggle-completed ()
@@ -1200,7 +1206,7 @@ https://github.com/magit/magit/issues/460 (@cpitclaudel)."
       :desc "Generate hledger balancesheet"
       "b" 'hledger-balancesheet*
 
-      :desc "Exec hledger command"
+      :desc "Generate hledger daily report"
       "d" 'hledger-daily-report*)
 
 (map! :localleader
@@ -1240,7 +1246,7 @@ https://github.com/magit/magit/issues/460 (@cpitclaudel)."
   "q" 'helpful-kill-buffers)
 
 ;;;------ helpful configuration ------;;;
-(add-load-path! "~/.nix-profile/share/emacs/site-lisp/elpa/mu4e-1.10.7")
+(add-load-path! "~/.nix-profile/share/emacs/site-lisp/elpa/mu4e-1.10.8")
 (require 'mu4e)
 (require 'mu4e-contrib)
 (require 'mu4e-actions)
@@ -1332,14 +1338,17 @@ https://github.com/magit/magit/issues/460 (@cpitclaudel)."
   ;;    ))
   ;;(mu4e-context-switch t "example1")
 
-  (org-msg-mode 0)
-
   ;; https://emacs.stackexchange.com/questions/3061/how-to-stop-mu4e-from-inserting-line-breaks
   (defun no-auto-fill ()
     "Turn off auto-fill-mode."
     (auto-fill-mode -1))
-  (add-hook 'mu4e-compose-mode-hook #'no-auto-fill)
 
+  (defun no-org-msg-mode ()
+  "Disable org-msg-mode since it doesn't respect multiline emails"
+    (org-msg-mode 0))
+
+  (add-hook 'mu4e-compose-mode-hook #'no-auto-fill)
+  (add-hook 'mu4e-compose-pre-hook #'no-org-msg-mode)
 )
 
 ;; TODO fix my make-mu4e-context wrapper

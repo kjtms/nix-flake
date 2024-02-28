@@ -1,4 +1,4 @@
-{ config, lib, pkgs, username, dotfilesDir, ... }:
+{ pkgs, dotfilesDir, ... }:
 
 let
   # This sets up my "phoenix" script with my configuration paths

@@ -1,4 +1,4 @@
-{ config, lib, pkgs, ... }:
+{ pkgs, ... }:
 
 {
   # Collection of useful CLI apps
@@ -9,34 +9,34 @@
     gnugrep gnused
     killall
     libnotify
+    timer
     bat eza fd bottom ripgrep
     rsync
     tmux
     htop
     hwinfo
     unzip
-    unrar
-    p7zip
-    octave
     brightnessctl
     w3m
     fzf
     pandoc
     pciutils
+    (pkgs.callPackage ../pkgs/smartcalc.nix { })
+    (pkgs.writeShellScriptBin "sc" ''smartcalc'')
     #(pkgs.callPackage ../pkgs/ytsub.nix { })
     #(pkgs.callPackage ../pkgs/russ.nix { })
     #(pkgs.python3Packages.callPackage ../pkgs/impressive.nix { })
     (pkgs.callPackage ../pkgs/pokemon-colorscripts.nix { })
-    #(pkgs.writeShellScriptBin "airplane-mode" ''
-    #  #!/bin/sh
-    #  connectivity="$(nmcli n connectivity)"
-    #  if [ "$connectivity" == "full" ]
-    #  then
-    #      nmcli n off
-    #  else
-    #      nmcli n on
-    #  fi
-    #'')
+    (pkgs.writeShellScriptBin "airplane-mode" ''
+      #!/bin/sh
+      connectivity="$(nmcli n connectivity)"
+      if [ "$connectivity" == "full" ]
+      then
+          nmcli n off
+      else
+          nmcli n on
+      fi
+    '')
     vim neovim
   ];
 

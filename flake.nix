@@ -1,8 +1,12 @@
 {
   description = "Help! oh God, oh please help me!";
 
-  outputs = { self, nixpkgs, home-manager, nix-doom-emacs, stylix, eaf, eaf-browser, org-nursery, org-yaap, org-timeblock, phscroll, blocklist-hosts, rust-overlay, hyprland-plugins, ... }@inputs:
+  outputs = inputs@{ self, nixpkgs, nixpkgs-stable, home-manager, nix-doom-emacs, nix-straight,
+              stylix, blocklist-hosts, rust-overlay, hyprland-plugins,
+              eaf, eaf-browser, org-nursery, org-yaap,
+              org-side-tree, org-timeblock, phscroll, ... }:
   let
+
     # ---- SYSTEM SETTINGS ---- #
     system = "x86_64-linux"; # system arch
     hostname = "Bohrium"; # hostname
@@ -38,7 +42,6 @@
       src = nixpkgs;
       patches = [
                   ./patches/emacs-no-version-check.patch
-                  ./patches/nixos-nixpkgs-268027.patch
                 ];
     };
 
@@ -50,6 +53,15 @@
       overlays = [ rust-overlay.overlays.default ];
     };
 
+    pkgs-stable = import nixpkgs-patched {
+      inherit system;
+      config = {
+        allowUnfree = true;
+        allowUnfreePredicate = (_: true);
+      };
+      overlays = [ rust-overlay.overlays.default ];
+    };
+
     # configure lib
     lib = nixpkgs.lib;
 
@@ -58,10 +70,10 @@
       user = home-manager.lib.homeManagerConfiguration {
           inherit pkgs;
           modules = [ (./. + "/profiles"+("/"+profile)+"/home.nix") # load home.nix from selected PROFILE
-                      #   inputs.nix-flatpak.homeManagerModules.nix-flatpak # Declarative flatpaks
                     ];
           extraSpecialArgs = {
             # pass config variables from above
+            inherit pkgs-stable;
             inherit username;
             inherit name;
             inherit hostname;
@@ -80,7 +92,6 @@
             inherit spawnEditor;
             inherit timezone;
             inherit (inputs) nix-doom-emacs;
-            #inherit (inputs) nix-flatpak;
             inherit (inputs) stylix;
             inherit (inputs) eaf;
             inherit (inputs) eaf-browser;
@@ -100,6 +111,7 @@
         modules = [ (./. + "/profiles"+("/"+profile)+"/configuration.nix") ]; # load configuration.nix from selected PROFILE
         specialArgs = {
           # pass config variables from above
+          inherit pkgs-stable;
           inherit username;
           inherit name;
           inherit hostname;
@@ -118,9 +130,23 @@
 
   inputs = {
     nixpkgs.url = "nixpkgs/nixos-unstable";
+    nixpkgs-stable.url = "nixpkgs/nixos-23.11";
+
     home-manager.url = "github:nix-community/home-manager/master";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
-    nix-doom-emacs.url = "github:librephoenix/nix-doom-emacs?ref=pgtk-patch";
+
+    nix-doom-emacs = {
+      url = "github:nix-community/nix-doom-emacs";
+      inputs = {
+        nixpkgs.follows = "nixpkgs";
+        nix-straight.follows = "nix-straight";
+      };
+    };
+
+    nix-straight = {
+      url = "github:librephoenix/nix-straight.el/pgtk-patch";
+      flake = false;
+    };
     stylix.url = "github:danth/stylix";
     rust-overlay.url = "github:oxalica/rust-overlay";
     #nix-flatpak.url = "github:gmodena/nix-flatpak/?ref=v0.2.0";
