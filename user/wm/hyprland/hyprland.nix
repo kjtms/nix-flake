@@ -59,6 +59,8 @@
 
         gaps_in = 7;
         gaps_out = 7;
+
+        allow_tearing = false;
       };
 
       decoration = {
@@ -79,7 +81,7 @@
         shadow_range = 50;
         shadow_render_power = 3;
         blurls = [
-          "waybar"
+          #"waybar"
           "lockscreen"
           "popup"
         ];
@@ -89,7 +91,6 @@
         sensitivity = "-0.5";
         force_no_accel = true;
         kb_layout = "us";
-        kb_options = "caps:escape";
         numlock_by_default = true;
         repeat_delay = 350;
         repeat_rate = 50;
@@ -154,7 +155,10 @@
       "SDL_VIDEODRIVER,wayland"
       "_JAVA_AWT_WM_NONEPARENTING,1"
       "WLR_NO_HARDWARE_CURSORS,1"
-      "WLR_DRM_NO_ATOMIC,1"
+     #"WLR_DRM_NO_ATOMIC,1"
+      "LIBVA_DRIVER_NAME,nvidia"
+      "GBM_BACKEND,nvidia-drm"
+      "__GLX_VENDOR_LIBRARY_NAME,nvidia"
 
       "MOZ_DISABLE_RDD_SANDBOX,1"
       "MOZ_ENABLE_WAYLAND,1"
@@ -320,6 +324,13 @@
         "opacity 0.65,title:^(My Local Dashboard Awesome Homepage - qutebrowser)$"
         "opacity 0.65,title:\[.*\] - My Local Dashboard Awesome Homepage"
         "opacity 0.90,class:^(org.keepassxc.KeePassXC)$"
+        "noblur,class:^(waybar)$"
+        "opacity 0.70,class:^(waybar)$"
+        "immediate, class:^(Team Fortress 2)$"
+        "immediate, class:^(Cult of The Lamb)"
+        "immediate, class:^(Deep Rock Galactic)"
+        "immediate, class:^(Hyper Demon)$"
+       #"immediate, class:^(Doom)$"
       ];
 
     };

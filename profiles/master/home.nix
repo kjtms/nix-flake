@@ -15,6 +15,7 @@
               ../../user/shell/sh.nix # My zsh and bash config
               ../../user/shell/cli-collection.nix # Useful CLI apps
               ../../user/bin/phoenix.nix # My nix command wrapper
+              ../../user/app/music/music.nix
               ../../user/app/doom-emacs/doom.nix # My doom emacs config
               ../../user/app/ranger/ranger.nix # My ranger file manager config
               ../../user/app/games/games.nix # various videogame apps
@@ -88,6 +89,7 @@
     inkscape
     musikcube
     mpv
+    mpvScripts.mpris
     yt-dlp
     #freetube
     blender
@@ -101,8 +103,13 @@
     mediainfo-gui
     audio-recorder
     deluge # TODO make deluge config a seperate .nix file under /app, a lot of customizing to be done
+    mopidy
+    mopidy-iris
     armcord
     etcher
+    nicotine-plus
+    ticktick
+    opera
   ];
 
   nixpkgs.config.permittedInsecurePackages = [

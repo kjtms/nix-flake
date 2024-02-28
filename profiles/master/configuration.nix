@@ -14,6 +14,7 @@
       ../../system/hardware/printing.nix
       ../../system/hardware/bluetooth.nix
       ../../system/hardware/time.nix
+     #../../system/hardware/zsa.nix
       (./. + "../../../system/wm"+("/"+wm)+".nix") # My window manager
       #( import ../../system/app/docker.nix {storageDriver = "btrfs"; inherit username pkgs config lib;} )
       ../../system/app/flatpak.nix
@@ -28,12 +29,14 @@
       ../../system/security/openvpn.nix
       ../../system/style/stylix.nix
     ];
-  users.users.nixosvmtest = {
-    isSystemUser = true;
-    initialPassword = "true";
-    group = "nixosvmtest";
-  };
-  users.groups.nixosvmtest = {};
+# users.users.nixosvmtest = {
+#   isSystemUser = true;
+#   initialPassword = "true";
+#   group = "nixosvmtest";
+# };
+# users.groups.nixosvmtest = {};
+
+  hardware.keyboard.zsa.enable = true;
 
   # Fix nix path
   nix.nixPath = [
@@ -96,6 +99,7 @@
     cryptsetup
     home-manager
     xfce.thunar
+    zsa-udev-rules
   ];
 
   # I use zsh btw

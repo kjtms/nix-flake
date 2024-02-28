@@ -9,6 +9,5 @@
     prismlauncher
     lutris
     heroic
-    SDL2
   ];
 }
