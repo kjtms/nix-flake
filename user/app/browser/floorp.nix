@@ -1,13 +1,15 @@
-{ config, lib, pkgs, font, ... }:
+{ pkgs, userSettings, ... }:
 
 {
-  # Module installing floorp as default browser
+  # Module installing  as default browser
   home.packages = [ pkgs.floorp ];
 
-  home.sessionVariables = { DEFAULT_BROWSER = "${pkgs.floorp}/bind/floorp";};
+  home.sessionVariables = {
+    DEFAULT_BROWSER = "${pkgs.floorp}/bin/floorp";
+  };
 
   home.file.".floorp/floorp.overrides.cfg".text = ''
-    defaultPref("font.name.serif.x-western","''+font+''");
+    defaultPref("font.name.serif.x-western","''+userSettings.font+''");
 
     defaultPref("font.size.variable.x-western",20);
     defaultPref("browser.toolbars.bookmarks.visibility","toggle");
@@ -24,7 +26,7 @@
     defaultPref("toolkit.legacyUserProfileCustomizations.stylesheets",true);
     defaultPref("svg.context-properties.content.enabled",true);
     defaultPref("layout.css.color-mix.enabled",true);
-    pref("font.name.serif.x-western","''+font+''");
+    pref("font.name.serif.x-western","''+userSettings.font+''");
 
     pref("font.size.variable.x-western",20);
     pref("browser.toolbars.bookmarks.visibility","toggle");

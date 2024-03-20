@@ -13,13 +13,28 @@ These are my dotfiles (configuration files) for my NixOS setup(s).
 Here is my main setup:
 [[desktop.png]]
 
-** My 55+ Themes
+** My Themes
 [[https://github.com/danth/stylix#readme][Stylix]] (and [[https://github.com/SenchoPens/base16.nix#readme][base16.nix]], of course) is amazing, allowing you to theme your entire system with base16-themes.
 
 Using this I have [[./themes][55+ themes]] (I add more sometimes) I can switch between on-the-fly. Visit the [[./themes][themes directory]] for more info and screenshots!
 
 ** Install
 I wrote some reinstall notes for myself [[./install.org][here (install.org)]].
+
+TLDR: You should™ be able to install my dotfiles to a fresh NixOS system with the following experimental script:
+#+begin_src sh :noeval
+nix-shell -p git --command "nix run --experimental-features 'nix-command flakes' gitlab:librephoenix/nixos-config"
+#+end_src
+
+Disclaimer: Ultimately, I can't gaurantee this will work for anyone other than myself, so /use this at your own discretion/. Also my dotfiles are /highly/ opinionated, which you will discover immediately if you try them out.
+
+Potential Errors: I've only tested it working on UEFI with the default EFI mount point of =/boot=. I've added experimental legacy (BIOS) boot support, but it does rely on a quick and dirty script to find the grub device. If you are testing it using some weird boot configuration for whatever reason, try modifying =bootMountPath= (UEFI) or =grubDevice= (legacy BIOS) in =flake.nix= before install, or else it will complain about not being able to install the bootloader.
+
+Note: If you're installing this to a VM, Hyprland won't work unless 3D acceleration is enabled.
+
+Security Disclaimer: If you install or copy my =homelab= or =worklab= profiles, /CHANGE THE PUBLIC SSH KEYS UNLESS YOU WANT ME TO BE ABLE TO SSH INTO YOUR SERVER. YOU CAN CHANGE OR REMOVE THE SSH KEY IN THE RELEVANT CONFIGURATION.NIX/:
+- [[./profiles/homelab/configuration.nix][configuration.nix]] for homelab profile
+- [[./profiles/worklab/configuration.nix][configuration.nix]] for worklab profile
 
 ** Modules
 Separate Nix files can be imported as modules using an import block:
@@ -70,3 +85,7 @@ I separate my configurations into [[./profiles][profiles]] (essentially system t
 My profile can be conveniently selected in [[./flake.nix][my flake.nix]] by setting the =profile= variable.
 
 More detailed information on these profiles is in the [[./profiles][profiles directory]].
+
+** Star History
+Didn't think this would get that many [[https://star-history.com/#librephoenix/nixos-config&Date][stars on GitHub]], yet here we are:
+[[https://api.star-history.com/svg?repos=librephoenix/nixos-config&type=Date.png]]
