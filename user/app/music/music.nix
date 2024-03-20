@@ -1,10 +1,10 @@
 { config, lib, pkgs, ... }:
 
 {
-services.mopidy.enable = true;
+  services.mopidy.enable = true;
 
-home.packages = with pkgs; [
-  mopidy-mpd
-  mopidy-iris
-];
+  home.packages = with pkgs; [
+    mopidy-mpd
+    mopidy-iris
+  ];
 }

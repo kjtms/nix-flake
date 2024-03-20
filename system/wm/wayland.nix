@@ -1,4 +1,4 @@
-{ config, lib, pkgs, ... }:
+{ config, pkgs, ... }:
 
 {
   imports = [ ./pipewire.nix
@@ -7,18 +7,33 @@
               ./fonts.nix
             ];
 
-  environment.systemPackages = [ pkgs.wayland pkgs.waydroid ];
+  environment.systemPackages = with pkgs;
+    [ wayland waydroid
+      (sddm-chili-theme.override {
+        themeConfig = {
+          background = config.stylix.image;
+          ScreenWidth = 1920;
+          ScreenHeight = 1080;
+          blur = true;
+          recursiveBlurLoops = 3;
+          recursiveBlurRadius = 5;
+        };})
+    ];
 
   # Configure xwayland
   services.xserver = {
     enable = true;
-    layout = "us";
-    xkbVariant = "";
-    xkbOptions = "caps:escape";
     videoDrivers = [ "nvidia" ];
-    displayManager.gdm = {
+    xkb = {
+      layout = "us";
+      variant = "";
+      options = "caps:escape";
+    };
+    displayManager.sddm = {
       enable = true;
-      wayland = true;
+      wayland.enable = true;
+      enableHidpi = true;
+      theme = "chili";
     };
   };
 

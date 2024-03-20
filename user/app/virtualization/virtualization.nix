@@ -1,4 +1,4 @@
-{ config, lib, pkgs, ... }:
+{ config, pkgs, ... }:
 
 {
   # Various packages related to virtualization, compatability and sandboxing
@@ -16,8 +16,8 @@
     dosfstools
   ];
 
- #home.file.".config/libvirt/qemu.conf".text = ''
- #nvram = ["/run/libvirt/nix-ovmf/OVMF_CODE.fd:/run/libvirt/nix-ovmf/OVMF_VARS.fd"]
- #'';
+  home.file.".config/libvirt/qemu.conf".text = ''
+nvram = ["/run/libvirt/nix-ovmf/OVMF_CODE.fd:/run/libvirt/nix-ovmf/OVMF_VARS.fd"]
+  '';
 
 }

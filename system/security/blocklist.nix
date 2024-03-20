@@ -1,6 +1,6 @@
-{ config, blocklist-hosts, pkgs, ... }:
+{ blocklist-hosts, ... }:
 
-let blocklist = builtins.readFile "${blocklist-hosts}/alternates/gambling/hosts";
+let blocklist = builtins.readFile "${blocklist-hosts}/alternates/gambling-porn/hosts";
 in
 {
   networking.extraHosts = ''
