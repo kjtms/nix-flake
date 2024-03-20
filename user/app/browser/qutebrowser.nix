@@ -1,10 +1,6 @@
-{ config, lib, pkgs, font, qute-containers, ... }:
+{ config, pkgs, userSettings, ... }:
 
 {
-
-  nixpkgs.config.packageOverrides = pkgs: {
-    qutebrowser = pkgs.qutebrowser.override { enableVulkan = false; };
-  };
 
   home.packages = [ pkgs.qutebrowser
                     (pkgs.callPackage ./qute-containers.nix { dmenuCmd = "fuzzel -d"; })
@@ -41,12 +37,6 @@ base0D = "#''+config.lib.stylix.colors.base0D+''"
 base0E = "#''+config.lib.stylix.colors.base0E+''"
 base0F = "#''+config.lib.stylix.colors.base0F+''"
 
-# TODO stylix user CSS
-# current_stylesheet_directory = '~/.config/qutebrowser/themes/'
-# current_stylesheet = base16_theme+'-all-sites.css'
-# current_stylesheet_path = current_stylesheet_directory + current_stylesheet
-# config.set('content.user_stylesheets', current_stylesheet_path)
-
 config.set('content.cookies.accept', 'no-3rdparty', 'chrome-devtools://*')
 config.set('content.cookies.accept', 'no-3rdparty', 'devtools://*')
 
@@ -75,13 +65,21 @@ c.url.default_page = str(config.configdir)+'/qute-home.html'
 c.url.start_pages = str(config.configdir)+'/qute-home.html'
 
 c.url.searchengines = {'DEFAULT': 'https://startpage.com/do/search?query={}',
-                       'd'   : 'https://duckduckgo.com/?q={}&ia=web',
+                       'd'      : 'https://duckduckgo.com/?q={}&ia=web',
                        'az'     : 'https://www.amazon.com/s?k={}',
                        'aw'     : 'https://wiki.archlinux.org/index.php?search={}&title=Special%3ASearch&wprov=acrw1',
                        'nw'     : 'https://nixos.wiki/index.php?search={}&go=Go',
                        'mn'     : 'https://mynixos.com/search?q={}',
                        'sb'     : 'https://www.serebii.net/search.shtml?q={}&sa=Search',
-                       'bp'     : 'https://bulbapedia.bulbagarden.net/wiki/index.php?title=Special%3ASearch&search={}&go=Go'
+                       'bp'     : 'https://bulbapedia.bulbagarden.net/wiki/index.php?title=Special%3ASearch&search={}&go=Go',
+                       'yt'     : 'https://www.youtube.com/results?search_query={}',
+                       'od'     : 'https://odysee.com/$/search?q={}',
+                       'gd'     : 'https://drive.google.com/drive/search?q={}',
+                       'gh'     : 'https://github.com/search?q={}&type=repositories',
+                       'gl'     : 'https://gitlab.com/search?search={}&nav_source=navbar',
+                       'np'     : 'https://github.com/search?q=repo%3ANixOS%2Fnixpkgs%20{}&type=code',
+                       'wk'     : 'https://en.wikipedia.org/w/index.php?fulltext=1&search={}&title=Special%3ASearch&ns0=1',
+                       'th'     : 'https://www.thingiverse.com/search?q={}&page=1'
                       }
 
 config.set('completion.open_categories',["searchengines","quickmarks","bookmarks"])
@@ -93,15 +91,30 @@ config.set('fileselect.single_file.command', ['kitty','-e','ranger','--choosefil
 config.set('fileselect.multiple_files.command', ['kitty','-e','ranger','--choosefiles={}'])
 config.set('fileselect.folder.command', ['kitty','-e','ranger','--choosedir={}'])
 
+# bindings from doom emacs
+config.bind('<Alt-x>', 'cmd-set-text :')
+config.bind('<Ctrl-p>', 'completion-item-focus prev', mode='command')
+config.bind('<Ctrl-n>', 'completion-item-focus next', mode='command')
+
+# bindings from vimium
 config.bind('t', 'open -t')
 config.bind('x', 'tab-close')
 config.bind('yf', 'hint links yank')
+
+# spawn external programs
 config.bind(',m', 'hint links spawn mpv {hint-url}')
 config.bind(',co', 'spawn container-open')
 config.bind(',cf', 'hint links userscript container-open')
+
+# TODO stylix user CSS
+# current_stylesheet_directory = '~/.config/qutebrowser/themes/'
+# current_stylesheet = base16_theme+'-all-sites.css'
+# current_stylesheet_path = current_stylesheet_directory + current_stylesheet
+# config.set('content.user_stylesheets', current_stylesheet_path)
 #config.bind(',s', 'set content.user_stylesheets \'\' ')
 #config.bind(',S', 'set content.user_stylesheets '+current_stylesheet_path)
 
+# theming
 c.colors.completion.fg = base05
 c.colors.completion.odd.bg = base01
 c.colors.completion.even.bg = base00
@@ -194,7 +207,7 @@ c.colors.tabs.selected.even.fg = base05
 c.colors.tabs.selected.even.bg = base02
 c.colors.webpage.bg = base00
 
-font = "''+font+''"
+font = "''+userSettings.font+''"
 
 c.fonts.default_family = font
 c.fonts.default_size = '14pt'
@@ -222,7 +235,7 @@ c.fonts.web.family.cursive = font
         }
         /*paragraphs*/
         p {
-            font-family:''+font+'';
+            font-family:''+userSettings.font+'';
 
             font-size:24px;
             text-align:center;
@@ -255,7 +268,7 @@ c.fonts.web.family.cursive = font
 
         /*xmp tag style for ascii art*/
         xmp {
-            font-family:''+font+'';
+            font-family:''+userSettings.font+'';
 
             font-size:22px;
             color: #''+config.lib.stylix.colors.base01+''
@@ -340,7 +353,7 @@ Bard
       }
       /*paragraphs*/
       p {
-          font-family:''+font+'';
+          font-family:''+userSettings.font+'';
 
           font-size:24px;
           text-align:center;
@@ -373,7 +386,7 @@ Bard
 
       /*xmp tag style for ascii art*/
       xmp {
-          font-family:''+font+'';
+          font-family:''+userSettings.font+'';
 
           font-size:22px;
           color: #''+config.lib.stylix.colors.base01+''
@@ -447,7 +460,7 @@ Bard
       }
       /*paragraphs*/
       p {
-          font-family:''+font+'';
+          font-family:''+userSettings.font+'';
 
           font-size:24px;
           text-align:center;
@@ -480,7 +493,7 @@ Bard
 
       /*xmp tag style for ascii art*/
       xmp {
-          font-family:''+font+'';
+          font-family:''+userSettings.font+'';
 
           font-size:22px;
           color: #''+config.lib.stylix.colors.base01+''
@@ -554,7 +567,7 @@ Bard
       }
       /*paragraphs*/
       p {
-          font-family:''+font+'';
+          font-family:''+userSettings.font+'';
 
           font-size:24px;
           text-align:center;
@@ -587,7 +600,7 @@ Bard
 
       /*xmp tag style for ascii art*/
       xmp {
-          font-family:''+font+'';
+          font-family:''+userSettings.font+'';
 
           font-size:22px;
           color: #''+config.lib.stylix.colors.base01+''
@@ -661,7 +674,7 @@ Bard
       }
       /*paragraphs*/
       p {
-          font-family:''+font+'';
+          font-family:''+userSettings.font+'';
 
           font-size:24px;
           text-align:center;
@@ -694,7 +707,7 @@ Bard
 
       /*xmp tag style for ascii art*/
       xmp {
-          font-family:''+font+'';
+          font-family:''+userSettings.font+'';
 
           font-size:22px;
           color: #''+config.lib.stylix.colors.base01+''
@@ -768,7 +781,7 @@ Bard
       }
       /*paragraphs*/
       p {
-          font-family:''+font+'';
+          font-family:''+userSettings.font+'';
 
           font-size:24px;
           text-align:center;
@@ -801,7 +814,7 @@ Bard
 
       /*xmp tag style for ascii art*/
       xmp {
-          font-family:''+font+'';
+          font-family:''+userSettings.font+'';
 
           font-size:22px;
           color: #''+config.lib.stylix.colors.base01+''
@@ -875,7 +888,7 @@ Bard
       }
       /*paragraphs*/
       p {
-          font-family:''+font+'';
+          font-family:''+userSettings.font+'';
 
           font-size:24px;
           text-align:center;
@@ -908,7 +921,7 @@ Bard
 
       /*xmp tag style for ascii art*/
       xmp {
-          font-family:''+font+'';
+          font-family:''+userSettings.font+'';
 
           font-size:22px;
           color: #''+config.lib.stylix.colors.base01+''

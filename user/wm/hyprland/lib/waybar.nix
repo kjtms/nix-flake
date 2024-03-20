@@ -1,4 +1,4 @@
-{ config, lib, pkgs, stdenv, toString, browser, term, spawnEditor, font, hyprland-plugins, timezone, ... }:
+{ config, lib, pkgs, stdenv, toString, browser, term, spawnEditor, userSettings, hyprland-plugins, systemSettings, ... }:
 
 {
   programs.waybar = {
@@ -63,7 +63,7 @@
         "clock" = {
           interval = 1;
           format = "{:%a %Y-%m-%d %I:%M:%S %p}";
-          timezone = timezone;
+          timezone = systemSettings.timezone;
           tooltip = false;
         };
         "cpu" = {
@@ -121,7 +121,7 @@
     }];
     style = ''
       * {
-          font-family: FontAwesome, ''+font+'';
+          font-family: FontAwesome, ''+userSettings.font+'';
           font-weight: bold;
           font-size: 16px;
       }

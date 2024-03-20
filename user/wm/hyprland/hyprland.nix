@@ -1,6 +1,5 @@
-{ config, lib, pkgs, stdenv, toString, ags, browser, term, spawnEditor, font, hyprland-plugins, timezone, ... }:
+{ config, lib, pkgs, userSettings, ... }:
 
-# Hyprland ahead! Here ye must define settins'- in nix no less, yargh!
 {
   imports = [
     ../../app/terminal/alacritty.nix
@@ -10,31 +9,23 @@
       inherit config lib pkgs;
     })
     ./lib/waybar.nix
-    ./lib/eww/eww.nix
-    ./lib/swaylock.nix
-   #ags
   ];
+
   gtk.cursorTheme = {
     package = pkgs.bibata-cursors;
     name = if (config.stylix.polarity == "light") then "Bibata-Modern-Classic" else "Bibata-Modern-Ice";
     size = 24;
   };
 
-# programs.ags = {
-#   enable = true;
-#   configDir = ./lib/ags;
-# };
-
   wayland.windowManager.hyprland = {
     enable = true;
-    plugins = [
-    ];
+    plugins = [ ];
     xwayland.enable = true;
     systemd.enable = true;
     settings = {
       exec-once = [
         "dbus-update-activation-environment DISPLAY XAUTHORITY WAYLAND_DISPLAY:"
-        ("hyprctl setcursor" + config.gtk.cursorTheme.name + builtins.toString config.gtk.cursorTheme.size)
+        ("hyprctl setcursor" + config.gtk.cursorTheme.name + builtins.toString config.gtk.cursorTheme.size )
         "pypr"
         "nm-applet"
         "STEAM_FRAME_FORCE_CLOSE=1 SDL_VIDEODRIVER=x11 steam -silent"
@@ -44,9 +35,16 @@
         "waybar"
         "emacs --daemon"
         "swayidle -w timeout 120 'swaylock -f'"
+        "ydotoold"
       ];
 
-      exec = "~/.swaybg-stylix";
+      exec = [
+       "~/.swaybg-stylix"
+      ];
+
+      monitor = [
+        "eDP-1, 1920x1080@60, 0x0, 1"
+      ];
 
       general = {
         layout = "dwindle";
@@ -55,7 +53,7 @@
         border_size = 3;
         no_cursor_warps = false;
         "col.active_border" = "0xff" + config.lib.stylix.colors.base08;
-        "col.inactive_border" = "0xff" + config.lib.stylix.colors.base00;
+        "col.inactive_border" = "0x33" + config.lib.stylix.colors.base00;
 
         gaps_in = 7;
         gaps_out = 7;
@@ -81,7 +79,6 @@
         shadow_range = 50;
         shadow_render_power = 3;
         blurls = [
-          #"waybar"
           "lockscreen"
           "popup"
         ];
@@ -90,19 +87,18 @@
       input = {
         sensitivity = "-0.5";
         force_no_accel = true;
-        kb_layout = "us";
-        numlock_by_default = true;
+        kb_layout = "dk";
+        numlock_by_default = false;
         repeat_delay = 350;
         repeat_rate = 50;
         follow_mouse = 1;
         touchpad = {
           natural_scroll = false;
+          clickfinger_behavior = true;
         };
       };
 
       xwayland.force_zero_scaling = true;
-
-     #opengl.nvidia_anti_flicker = true;
 
       misc = {
         disable_hyprland_logo = true;
@@ -142,26 +138,26 @@
       };
 
       env = [
-      "XDG_SESSION_TYPE,wayland"
-      "XDG_SESSION_DESKTOP,Hyprland"
+        "XDG_SESSION_TYPE,wayland"
+        "XDG_SESSION_DESKTOP,Hyprland"
 
-      "GDK_BACKEND,wayland"
-      "WLR_DRM_DEVICES,/dev/dri/card1:/dev/dri/card0"
-      "QT_QPA_PLATFORM,wayland"
-      "QT_QPA_PLATFORMTHEME,qt5ct"
-      "QT_WAYLAND_DISABLE_WINDOWDECORATION,1"
-      "QT_AUTO_SCREEN_SCALE_FACTOR,1"
+        "GDK_BACKEND,wayland"
+        "WLR_DRM_DEVICES,/dev/dri/card1:/dev/dri/card0"
+        "QT_QPA_PLATFORM,wayland"
+        "QT_QPA_PLATFORMTHEME,qt5ct"
+        "QT_WAYLAND_DISABLE_WINDOWDECORATION,1"
+        "QT_AUTO_SCREEN_SCALE_FACTOR,1"
 
-      "SDL_VIDEODRIVER,wayland"
-      "_JAVA_AWT_WM_NONEPARENTING,1"
-      "WLR_NO_HARDWARE_CURSORS,1"
-     #"WLR_DRM_NO_ATOMIC,1"
-      "LIBVA_DRIVER_NAME,nvidia"
-      "GBM_BACKEND,nvidia-drm"
-      "__GLX_VENDOR_LIBRARY_NAME,nvidia"
+        "SDL_VIDEODRIVER,wayland"
+        "_JAVA_AWT_WM_NONEPARENTING,1"
+        "WLR_NO_HARDWARE_CURSORS,1"
+       #"WLR_DRM_NO_ATOMIC,1"
+        "LIBVA_DRIVER_NAME,nvidia"
+        "GBM_BACKEND,nvidia-drm"
+        "__GLX_VENDOR_LIBRARY_NAME,nvidia"
 
-      "MOZ_DISABLE_RDD_SANDBOX,1"
-      "MOZ_ENABLE_WAYLAND,1"
+        "MOZ_DISABLE_RDD_SANDBOX,1"
+        "MOZ_ENABLE_WAYLAND,1"
       ];
 #  _              _     _           _
 # | | _____ _   _| |__ (_)_ __   __| |___
@@ -176,17 +172,17 @@
         "$mod,          SPACE,      fullscreen, 1"
         "$modSHIFT,     SPACE,      fullscreen,"
 
-       ("$mod,          RETURN,     exec," + term)
+       ("$mod,          RETURN,     exec," + userSettings.term)
 
         "$modCTRL,      R,          exec, killall .waybar-wrapped && waybar & disown"
 
-       ("$mod,          A,          exec," + spawnEditor)
+       ("$mod,          A,          exec," + userSettings.spawnEditor)
 
         # Browse the seas
-       ("$mod,          S,          exec," + browser)
+       ("$mod,          S,          exec," + userSettings.browser)
         "$modCTRL,      S,          exec, container-open" # this one only works for qutebrowser
 
-        "$mod,          SEMICOLON,  exec, fuzzel"
+        "$mod,          E,  exec, fuzzel"
         "$mod,          X,          exec, fnottctl dismiss"
         "$modSHIFT,     X,          exec, fnottctl dismiss all"
         "$mod,          Q,          killactive"
@@ -332,9 +328,9 @@
         "immediate, class:^(Hyper Demon)$"
        #"immediate, class:^(Doom)$"
       ];
-
     };
   };
+
   home.packages = with pkgs; [
     alacritty
     kitty
@@ -344,19 +340,19 @@
     polkit_gnome
     libva-utils
     gsettings-desktop-schemas
+    gnome.zenity
     wlr-randr
     wtype
+    ydotool
     wl-clipboard
     hyprland-protocols
     hyprpicker
     swayidle
     swaybg
     fnott
-    #hyprpaper
-    #wofi
     fuzzel
     keepmenu
-    pinentry-gnome
+    pinentry-gnome3
     wev
     grim
     slurp
@@ -369,7 +365,16 @@
     wlsunset
     pavucontrol
     pamixer
-    playerctl
+    tesseract4
+    (pkgs.writeScriptBin "screenshot-ocr" ''
+      #!/bin/sh
+      imgname="/tmp/screenshot-ocr-$(date +%Y%m%d%H%M%S).png"
+      txtname="/tmp/screenshot-ocr-$(date +%Y%m%d%H%M%S)"
+      txtfname="/tmp/screenshot-ocr-$(date +%Y%m%d%H%M%S).txt"
+      grim -g "$(slurp)" $imgname;
+      tesseract $imgname $txtname;
+      wl-copy -n < $txtfname
+    '')
     (pkgs.writeScriptBin "sct" ''
       #!/bin/sh
       killall wlsunset &> /dev/null;
@@ -380,6 +385,25 @@
       else
         killall wlsunset &> /dev/null;
       fi
+    '')
+    (pkgs.writeScriptBin "obs-notification-mute-daemon" ''
+      #!/bin/sh
+      while true; do
+        if pgrep -x .obs-wrapped > /dev/null;
+          then
+            pkill -STOP fnott;
+            #emacsclient --eval "(org-yaap-mode 0)";
+          else
+            pkill -CONT fnott;
+            #emacsclient --eval "(if (not org-yaap-mode) (org-yaap-mode 1))";
+        fi
+        sleep 10;
+      done
+    '')
+    (pkgs.writeScriptBin "suspend-unless-render" ''
+      #!/bin/sh
+      if pgrep -x nixos-rebuild > /dev/null || pgrep -x home-manager > /dev/null || pgrep -x kdenlive > /dev/null || pgrep -x FL64.exe > /dev/null || pgrep -x blender > /dev/null || pgrep -x flatpak > /dev/null;
+      then echo "Shouldn't suspend"; sleep 10; else echo "Should suspend"; systemctl suspend; fi
     '')
     (pkgs.writeScriptBin "hyprworkspace" ''
       #!/bin/sh
@@ -396,7 +420,7 @@
       activemonitor=$(grep -B 11 "focused: yes" "$monitors" | awk 'NR==1 {print $2}')
       passivemonitor=$(grep  -B 6 "($workspace)" "$monitors" | awk 'NR==1 {print $2}')
       #activews=$(grep -A 2 "$activemonitor" "$monitors" | awk 'NR==3 {print $1}' RS='(' FS=')')
-      passivews=$(grep -A 6 "Monitor $passivemonitor" "$monitors" | awk 'NR==4 {print $1}' RS='(' FS=')')
+      passivews=$(grep -A 6 "Monitor $passivemonitor" "$monitors" | awk 'NR==3 {print $1}' RS='(' FS=')')
 
       if [[ $workspace -eq $passivews ]] && [[ $activemonitor != "$passivemonitor" ]]; then
        hyprctl dispatch workspace "$workspace" && hyprctl dispatch swapactiveworkspaces "$activemonitor" "$passivemonitor" && hyprctl dispatch workspace "$workspace"
@@ -424,7 +448,6 @@
       doCheck = false;
     })
   ];
-
   home.file.".config/hypr/pyprland.json".text = ''
     {
       "pyprland": {
@@ -433,22 +456,22 @@
       "scratchpads": {
         "term": {
           "command": "alacritty --class scratchpad",
-          "animation": "fromBottom",
           "margin": 50
         },
         "ranger": {
           "command": "kitty --class scratchpad -e ranger",
-          "animation": "fromBottom",
           "margin": 50
         },
         "musikcube": {
           "command": "alacritty --class scratchpad -e musikcube",
-          "animation": "fromBottom",
           "margin": 50
         },
         "btm": {
           "command": "alacritty --class scratchpad -e btm",
-          "animation": "fromBottom",
+          "margin": 50
+        },
+        "geary": {
+          "command": "geary",
           "margin": 50
         },
         "pavucontrol": {
@@ -461,14 +484,61 @@
     }
   '';
 
-
-  programs.fuzzel = {
+  home.file.".config/gtklock/style.css".text = ''
+    window {
+      background-image: url("''+config.stylix.image+''");
+      background-size: auto 100%;
+    }
+  '';
+  services.udiskie.enable = true;
+  services.udiskie.tray = "always";
+  programs.swaylock = {
     enable = true;
+    package = pkgs.swaylock-effects;
     settings = {
-      main = {
-        font = font + ":size=13";
-        terminal = "${pkgs.alacritty}/bin/alacritty";
-      };
+      clock = true;
+      color = "#"+config.lib.stylix.colors.base00;
+      inside-color = "#"+config.lib.stylix.colors.base00+"cc";
+      inside-caps-lock-color = "#"+config.lib.stylix.colors.base09;
+      inside-clear-color = "#"+config.lib.stylix.colors.base0A;
+      inside-wrong-color = "#"+config.lib.stylix.colors.base08;
+      inside-ver-color = "#"+config.lib.stylix.colors.base0D;
+      line-color = "#"+config.lib.stylix.colors.base00;
+      line-caps-lock-color = "#"+config.lib.stylix.colors.base00;
+      line-clear-color = "#"+config.lib.stylix.colors.base00;
+      line-wrong-color = "#"+config.lib.stylix.colors.base00;
+      line-ver-color = "#"+config.lib.stylix.colors.base00;
+      ring-color = "#"+config.lib.stylix.colors.base00;
+      ring-caps-lock-color = "#"+config.lib.stylix.colors.base09;
+      ring-clear-color = "#"+config.lib.stylix.colors.base0A;
+      ring-wrong-color = "#"+config.lib.stylix.colors.base08;
+      ring-ver-color = "#"+config.lib.stylix.colors.base0D;
+      text-color = "#"+config.lib.stylix.colors.base00;
+      key-hl-color = "#"+config.lib.stylix.colors.base0B;
+      font = config.stylix.fonts.monospace.name;
+      font-size = 20;
+      fade-in = 1;
+      grace = 5;
+      grace-no-mouse = false;
+      grace-no-touch = false;
+      timestr = "%I:%M%p";
+      datestr = "%a, %d %b-%y";
+      indicator = true;
+      indicator-radius = 200;
+      indicator-thickness = 20;
+      show-failed-attempts = true;
+      line-uses-ring = false;
+      ignore-empty-password = true;
+      screenshots = true;
+      effect-blur = "10x10";
+    };
+  };
+  programs.fuzzel.enable = true;
+  programs.fuzzel.settings = {
+    main = {
+      font = userSettings.font + ":size=13";
+      terminal = "${pkgs.alacritty}/bin/alacritty";
+    };
     colors = {
       background = config.lib.stylix.colors.base00 + "e6";
       text = config.lib.stylix.colors.base07 + "ff";
@@ -478,48 +548,48 @@
       selection-match = config.lib.stylix.colors.base05 + "ff";
       border = config.lib.stylix.colors.base08 + "ff";
     };
-   };
+    border = {
+      width = 3;
+      radius = 7;
+    };
   };
-
-  services.fnott = {
-    enable = true;
-    settings = {
-      main = {
-        anchor = "bottom-right";
-        stacking-order = "top-down";
-        min-width = 400;
-        title-font = font + ":size=14";
-        summary-font = font + ":size=12";
-        body-font = font + ":size=11";
-        border-size = 0;
-      };
-      low = {
-        background = config.lib.stylix.colors.base00 + "e6";
-        title-color = config.lib.stylix.colors.base03 + "ff";
-        summary-color = config.lib.stylix.colors.base03 + "ff";
-        body-color = config.lib.stylix.colors.base03 + "ff";
-        idle-timeout = 150;
-        max-timeout = 30;
-        default-timeout = 8;
-      };
-      normal = {
-        background = config.lib.stylix.colors.base00 + "e6";
-        title-color = config.lib.stylix.colors.base07 + "ff";
-        summary-color = config.lib.stylix.colors.base07 + "ff";
-        body-color = config.lib.stylix.colors.base07 + "ff";
-        idle-timeout = 150;
-        max-timeout = 30;
-        default-timeout = 8;
-      };
-      critical = {
-        background = config.lib.stylix.colors.base00 + "e6";
-        title-color = config.lib.stylix.colors.base08 + "ff";
-        summary-color = config.lib.stylix.colors.base08 + "ff";
-        body-color = config.lib.stylix.colors.base08 + "ff";
-        idle-timeout = 0;
-        max-timeout = 0;
-        default-timeout = 0;
-      };
+  services.fnott.enable = true;
+  services.fnott.settings = {
+    main = {
+      anchor = "bottom-right";
+      stacking-order = "top-down";
+      min-width = 400;
+      title-font = userSettings.font + ":size=14";
+      summary-font = userSettings.font + ":size=12";
+      body-font = userSettings.font + ":size=11";
+      border-size = 0;
+    };
+    low = {
+      background = config.lib.stylix.colors.base00 + "e6";
+      title-color = config.lib.stylix.colors.base03 + "ff";
+      summary-color = config.lib.stylix.colors.base03 + "ff";
+      body-color = config.lib.stylix.colors.base03 + "ff";
+      idle-timeout = 150;
+      max-timeout = 30;
+      default-timeout = 8;
+    };
+    normal = {
+      background = config.lib.stylix.colors.base00 + "e6";
+      title-color = config.lib.stylix.colors.base07 + "ff";
+      summary-color = config.lib.stylix.colors.base07 + "ff";
+      body-color = config.lib.stylix.colors.base07 + "ff";
+      idle-timeout = 150;
+      max-timeout = 30;
+      default-timeout = 8;
+    };
+    critical = {
+      background = config.lib.stylix.colors.base00 + "e6";
+      title-color = config.lib.stylix.colors.base08 + "ff";
+      summary-color = config.lib.stylix.colors.base08 + "ff";
+      body-color = config.lib.stylix.colors.base08 + "ff";
+      idle-timeout = 0;
+      max-timeout = 0;
+      default-timeout = 0;
     };
   };
 }
