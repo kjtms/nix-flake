@@ -1,14 +1,14 @@
-{ config, pkgs, userSettings, ... }:
+{ config, lib, pkgs, name, email, ... }:
 
 {
+  home.packages = [ pkgs.git ];
   programs.git-credential-oauth.enable = true;
   programs.git = {
     enable = true;
-    userName = userSettings.name;
-    userEmail = userSettings.email;
+    userName = name;
+    userEmail = email;
     extraConfig = {
       init.defaultBranch = "main";
-      safe.directory = userSettings.dotfilesDir;
     };
   };
 }

@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ config, lib, pkgs, ... }:
 
 {
   home.packages = [ pkgs.flatpak ];
@@ -7,6 +7,6 @@
   };
 
   #services.flatpak.enable = true;
-  #services.flatpak.packages = [ { appId = "com.kde.kdenlive"; origin = "flathub";  } ];
+  #services.flatpak.packages = [ { appId = "com.kde.kdenlive"; origin = "flathub"; } ];
   #services.flatpak.update.onActivation = true;
 }

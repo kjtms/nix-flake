@@ -1,7 +1,8 @@
-{ config, lib, pkgs, pkgs-stable, userSettings, systemSettings,
-  org-nursery, org-yaap, org-side-tree, org-timeblock, phscroll, ... }:
+{ config, lib, pkgs, pkgs-stable, profile,
+  org-nursery, org-yaap, org-side-tree, org-timeblock, phscroll, theme, name, username,
+  email, defaultRoamDir, wmType, font, dotfilesDir, ... }:
 let
-  themePolarity = lib.removeSuffix "\n" (builtins.readFile (./. + "../../../../themes"+("/"+userSettings.theme)+"/polarity.txt"));
+  themePolarity = lib.removeSuffix "\n" (builtins.readFile (./. + "../../../../themes"+("/"+theme)+"/polarity.txt"));
   dashboardLogo = ./. + "/nix-" + themePolarity + ".png";
 in
 {
@@ -108,14 +109,14 @@ in
 
   ;; Import relevant variables from flake into emacs
 
-  (setq user-full-name "''+userSettings.name+''") ; name
-  (setq user-username "''+userSettings.username+''") ; username
-  (setq user-mail-address "''+userSettings.email+''") ; email
-  (setq user-home-directory "/home/''+userSettings.username+''") ; absolute path to home directory as string
-  (setq user-default-roam-dir "''+userSettings.defaultRoamDir+''") ; absolute path to home directory as string
-  (setq system-nix-profile "''+systemSettings.profile+''") ; what profile am I using?
-  (setq system-wm-type "''+userSettings.wmType+''") ; wayland or x11?
-  (setq doom-font (font-spec :family "''+userSettings.font+''" :size 20)) ; import font
-  (setq dotfiles-dir "''+userSettings.dotfilesDir+''") ; import location of dotfiles directory
+  (setq user-full-name "''+name+''") ; name
+  (setq user-username "''+username+''") ; username
+  (setq user-mail-address "''+email+''") ; email
+  (setq user-home-directory "/home/''+username+''") ; absolute path to home directory as string
+  (setq user-default-roam-dir "''+defaultRoamDir+''") ; absolute path to home directory as string
+  (setq system-nix-profile "''+profile+''") ; what profile am I using?
+  (setq system-wm-type "''+wmType+''") ; wayland or x11?
+  (setq doom-font (font-spec :family "''+font+''" :size 20)) ; import font
+  (setq dotfiles-dir "''+dotfilesDir+''") ; import location of dotfiles directory
  '';
 }

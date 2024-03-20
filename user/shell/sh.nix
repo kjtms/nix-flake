@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ config, pkgs, ... }:
 let
 
   # My shell aliases
@@ -39,7 +39,7 @@ in
   home.packages = with pkgs; [
     disfetch lolcat cowsay onefetch
     gnugrep gnused
-    bat eza bottom fd bc
+    bat eza bottom fd
     direnv nix-direnv
   ];
 

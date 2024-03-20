@@ -1,14 +1,14 @@
-{ config, pkgs, ... }:
+{ config, lib, pkgs, ... }:
 
 {
   environment.systemPackages = with pkgs; [ virt-manager virtualbox distrobox ];
   virtualisation.libvirtd = {
-    allowedBridges = [
-      "nm-bridge"
-      "virbr0"
-    ];
+#   allowedBridges = [
+#     "nm-bridge"
+#     "virbr0"
+#   ];
     enable = true;
-    qemu.runAsRoot = false;
+    qemu.runAsRoot = true;
   };
   boot.extraModulePackages = with config.boot.kernelPackages; [ virtualbox ];
 }

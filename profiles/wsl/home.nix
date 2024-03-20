@@ -1,15 +1,15 @@
-{ config, pkgs, nix-doom-emacs, stylix, userSettings, ... }:
+{ config, lib, pkgs, stdenv, fetchurl, nix-doom-emacs, stylix, username, email, dotfilesDir, theme, wm, editor, ... }:
 
 {
   # Home Manager needs a bit of information about you and the paths it should
   # manage.
-  home.username = userSettings.username;
-  home.homeDirectory = "/home/"+userSettings.username;
+  home.username = username;
+  home.homeDirectory = "/home/"+username;
 
   programs.home-manager.enable = true;
 
   imports = [
-              (if ((userSettings.editor == "emacs") || (userSettings.editor == "emacsclient")) then nix-doom-emacs.hmModule else null)
+              nix-doom-emacs.hmModule
               stylix.homeManagerModules.stylix
               ../../user/shell/sh.nix # My zsh and bash config
               ../../user/shell/cli-collection.nix # Useful CLI apps
@@ -63,7 +63,7 @@
   xdg.mimeApps.enable = true;
 
   home.sessionVariables = {
-    EDITOR = userSettings.editor;
+    EDITOR = editor;
   };
 
 }
