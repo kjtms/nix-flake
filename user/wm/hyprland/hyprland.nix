@@ -87,11 +87,12 @@
       input = {
         sensitivity = "-0.5";
         force_no_accel = true;
-        kb_layout = "dk";
+        kb_layout = "us";
         numlock_by_default = false;
         repeat_delay = 350;
         repeat_rate = 50;
         follow_mouse = 1;
+        mouse_refocus = false;
         touchpad = {
           natural_scroll = false;
           clickfinger_behavior = true;
@@ -151,7 +152,7 @@
         "SDL_VIDEODRIVER,wayland"
         "_JAVA_AWT_WM_NONEPARENTING,1"
         "WLR_NO_HARDWARE_CURSORS,1"
-       #"WLR_DRM_NO_ATOMIC,1"
+        "WLR_DRM_NO_ATOMIC,1"
         "LIBVA_DRIVER_NAME,nvidia"
         "GBM_BACKEND,nvidia-drm"
         "__GLX_VENDOR_LIBRARY_NAME,nvidia"

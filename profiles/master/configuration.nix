@@ -98,6 +98,7 @@
     home-manager
     xfce.thunar
     zsa-udev-rules
+    xdg-desktop-portal-gtk
   ];
 
   # I use zsh btw

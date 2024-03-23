@@ -8,7 +8,7 @@
       # ---- SYSTEM SETTINGS ---- #
       systemSettings = {
         system = "x86_64-linux"; # system arch
-        hostname = "tellurium"; # hostname
+        hostname = "Bohrium"; # hostname
         profile = "master"; # select a profile defined from my profiles directory
         timezone = "Europe/Copenhagen"; # select timezone
         locale = "en_US.UTF-8"; # select locale
@@ -24,7 +24,7 @@
         email = "kjatten@pm.me"; # email (used for certain configurations)
         dotfilesDir = "~/.dotfiles"; # absolute path of the local repo
         theme = "uwunicorn-yt"; # selcted theme from my themes directory (./themes/)
-        wm = "hyprland"; # Selected window manager or desktop environment; must select one in both ./user/wm/ and ./system/wm/
+        wm = "xmonad"; # Selected window manager or desktop environment; must select one in both ./user/wm/ and ./system/wm/
         # window manager type (hyprland or x11) translator
         wmType = if (wm == "hyprland") then "wayland" else "x11";
         browser = "floorp"; # Default browser; must select one from ./user/app/browser/

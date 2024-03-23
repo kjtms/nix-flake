@@ -55,7 +55,7 @@ mySpawnEditor = "$SPAWNEDITOR"
 
 -- Whether focus follows the mouse pointer.
 myFocusFollowsMouse :: Bool
-myFocusFollowsMouse = False
+myFocusFollowsMouse = True
 
 -- Whether clicking on a window to focus also passes the click to the window
 myClickJustFocuses :: Bool
@@ -98,8 +98,7 @@ myScratchPads =
     NS "helpmenu" spawnHelp findHelp manageHelp,
     NS "musikcube" spawnMusikcube findMusikcube manageMusikcube,
     NS "cal" spawnCal findCal manageCal,
-    NS "pavucontrol" spawnPavucontrol findPavucontrol managePavucontrol,
-    NS "discord" spawnDiscord findDiscord manageDiscord
+    NS "pavucontrol" spawnPavucontrol findPavucontrol managePavucontrol
   ]
   where
     spawnTerm = myTerminal ++ " --title scratchpad"
@@ -129,14 +128,6 @@ myScratchPads =
     spawnBtm = myTerminal ++ " -o font.size=12 --title btm-scratchpad -e btm"
     findBtm = title =? "btm-scratchpad"
     manageBtm = customFloating $ W.RationalRect l t w h
-      where
-        h = 0.5
-        w = 0.4
-        t = 0.75 - h
-        l = 0.70 - w
-    spawnDiscord = "gtkcord4"
-    findDiscord = className =? "gtkcord4"
-    manageDiscord = customFloating $ W.RationalRect l t w h
       where
         h = 0.5
         w = 0.4
@@ -203,22 +194,13 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) =
       ((shiftMask, xK_Print), spawn "flameshot screen"), -- screen capture current monitor and save
       ((controlMask .|. shiftMask, xK_Print), spawn "flameshot screen -c"), -- screen capture current monitor to clipboard
 
-      -- launch game manager in gaming workspace
-      ((modm, xK_g), spawn "xdotool key Super+9 && gamehub"),
-
       -- control brightness from kbd
       ((0, xF86XK_MonBrightnessUp), spawn "brightnessctl set +15"),
       ((0, xF86XK_MonBrightnessDown), spawn "brightnessctl set 15-"),
 
-      -- control kbd brightness from kbd
-      ((0, xF86XK_KbdBrightnessUp), spawn "brightnessctl --device='asus::kbd_backlight' set +1 & xset r rate 350 100"),
-      ((0, xF86XK_KbdBrightnessDown), spawn "brightnessctl --device='asus::kbd_backlight' set 1- & xset r rate 350 100"),
-      ((shiftMask, xF86XK_MonBrightnessUp), spawn "brightnessctl --device='asus::kbd_backlight' set +1 & xset r rate 350 100"),
-      ((shiftMask, xF86XK_MonBrightnessDown), spawn "brightnessctl --device='asus::kbd_backlight' set 1- & xset r rate 350 100"),
-
       -- control volume from kbd
-      ((0, xF86XK_AudioLowerVolume), spawn "pamixer -d 10"),
-      ((0, xF86XK_AudioRaiseVolume), spawn "pamixer -i 10"),
+      ((0, xF86XK_AudioLowerVolume), spawn "pamixer -d 5"),
+      ((0, xF86XK_AudioRaiseVolume), spawn "pamixer -i 5"),
       ((0, xF86XK_AudioMute), spawn "pamixer -t"),
 
       -- control music from kbd
@@ -228,7 +210,7 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) =
       --((0, xF86XK_AudioPrev), spawn "cmus-remote -r && ~/.local/bin/cmus-current-song-notify.sh"),
 
       -- launch rofi
-      ((modm, xK_semicolon), spawn ("rofi -show drun -show-icons")),
+      ((modm, xK_e), spawn ("rofi -show drun -show-icons")),
       ((modm, xK_p), spawn ("keepmenu")),
       ((modm, xK_i), spawn ("networkmanager_dmenu")),
 
@@ -237,7 +219,7 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) =
       -- close all windows on current workspace
       ((modm .|. shiftMask, xK_c), killAll),
       -- exit xmonad
-      ((modm .|. shiftMask, xK_q), spawn "killall xmonad-x86_64-linux"),
+      ((modm .|. shiftMask, xK_q), restart "/run/current-system/sw/bin/xmonad" True),
       -- Lock with dm-tool
       ((modm, xK_Escape), spawn "dm-tool switch-to-greeter"),
       -- Lock with dm-tool and suspend
@@ -300,9 +282,7 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) =
       --((modm, xK_x), namedScratchpadAction myScratchPads "keepassxc"),
       ((modm, xK_z), namedScratchpadAction myScratchPads "terminal"),
       ((modm, xK_b), namedScratchpadAction myScratchPads "btm"),
-      ((modm, xK_d), namedScratchpadAction myScratchPads "discord"),
       ((modm, xK_o), namedScratchpadAction myScratchPads "octave"),
-      ((modm, xK_e), namedScratchpadAction myScratchPads "geary"),
       ((modm, xK_n), namedScratchpadAction myScratchPads "musikcube"),
       ((modm, xK_c), namedScratchpadAction myScratchPads "cal"),
       ((modm, xK_y), namedScratchpadAction myScratchPads "pavucontrol"),
@@ -392,7 +372,6 @@ myManageHook =
     [ title =? "Myuzi" --> (customFloating $ W.RationalRect 0.05 0.05 0.9 0.9),
       title =? "octave-scratchpad" --> (customFloating $ W.RationalRect 0.1 0.1 0.8 0.8),
       title =? "scratchpad" --> (customFloating $ W.RationalRect 0.1 0.1 0.8 0.8),
-      className =? "gtkcord4" --> (customFloating $ W.RationalRect 0.1 0.1 0.8 0.8),
       title =? "ranger-scratchpad" --> (customFloating $ W.RationalRect 0.05 0.05 0.9 0.9),
       title =? "btm-scratchpad" --> (customFloating $ W.RationalRect 0.1 0.1 0.8 0.8),
       className =? "Geary" --> (customFloating $ W.RationalRect 0.05 0.05 0.9 0.9),
