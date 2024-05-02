@@ -32,6 +32,7 @@
         "blueman-applet"
         "GOMAXPROCS=1 syncthing --no-browser"
         "protonmail-bridge --noninteractive"
+        "dropbox start"
         "waybar"
         "emacs --daemon"
         "swayidle -w timeout 120 'swaylock -f'"
@@ -42,9 +43,9 @@
        "~/.swaybg-stylix"
       ];
 
-      monitor = [
-        "eDP-1, 1920x1080@60, 0x0, 1"
-      ];
+  monitor = [
+    "HDMI-A-2, 2560x1440@144, 0x0, 1"
+    ];
 
       general = {
         layout = "dwindle";
@@ -152,13 +153,20 @@
         "SDL_VIDEODRIVER,wayland"
         "_JAVA_AWT_WM_NONEPARENTING,1"
         "WLR_NO_HARDWARE_CURSORS,1"
-        "WLR_DRM_NO_ATOMIC,1"
+
+        "WLR_DRM_NO_ATOMIC,0"
         "LIBVA_DRIVER_NAME,nvidia"
         "GBM_BACKEND,nvidia-drm"
         "__GLX_VENDOR_LIBRARY_NAME,nvidia"
+        "__NV_PRIME_RENDER_OFFLOAD,1"
+        "NVD_BACKEND,direct"
+        "PROTON_ENABLE_NGX_UPDATER,1"
+        "__GL_MaxFramesAllowed,1"
+        "__VK_LAYER_NV_optimus,NVIDIA_only"
 
         "MOZ_DISABLE_RDD_SANDBOX,1"
         "MOZ_ENABLE_WAYLAND,1"
+        "ELECTRON_OZONE_PLATFORM_HINT,auto"
       ];
 #  _              _     _           _
 # | | _____ _   _| |__ (_)_ __   __| |___

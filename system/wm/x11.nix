@@ -31,4 +31,10 @@
       mouse.accelSpeed = "-0.1";
     };
   };
+
+  # Nvidia is the worst company on earth
+  hardware.nvidia = {
+    nvidiaSettings = true;
+    modesetting.enable = true;
+  };
 }

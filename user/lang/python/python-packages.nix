@@ -37,10 +37,10 @@
       jeepney
       keyring
       lxml
-      markdown
+     #markdown
       markupsafe
       more-itertools
-      numpy
+     #numpy
       ordered-set
       packaging
       pillow

@@ -1,4 +1,4 @@
-{ config, pkgs, pkgs-kdenlive, nix-doom-emacs, stylix, userSettings, ... }:
+{ config, lib, pkgs, pkgs-kdenlive, nix-doom-emacs, stylix, userSettings, ... }:
 
 {
   # Home Manager needs a bit of information about you and the paths it should
@@ -24,6 +24,8 @@
               ../../user/app/virtualization/virtualization.nix # Virtual machines
              #../../user/app/flatpak/flatpak.nix # Flatpaks
               ../../user/style/stylix.nix # Styling and themes for my apps
+              ../../user/lang/python/python.nix
+              ../../user/lang/python/python-packages.nix
              #../../user/lang/cc/cc.nix # C and C++ tools
              #../../user/lang/godot/godot.nix # Game development
              #../../user/pkgs/blockbench.nix # Blockbench ## marked as insecure
@@ -100,6 +102,7 @@
     vlc
     mpv
     yt-dlp
+    strawberry
     #freetube
     blender
     cura
@@ -138,8 +141,11 @@
     mediainfo-gui
     audio-recorder
 
+
     # Various dev packages
+    dropbox
     texinfo
+    nix-prefetch-git
     libffi zlib
     nodePackages.ungit
   ]) ++ ([ pkgs-kdenlive.kdenlive ]);
@@ -150,6 +156,8 @@
   ];
 
   services.syncthing.enable = true;
+
+  nixpkgs.config.allowUnfree = true;
 
   xdg.enable = true;
   xdg.userDirs = {
@@ -165,7 +173,7 @@
     publicShare = null;
     extraConfig = {
       XDG_DOTFILES_DIR = "${config.home.homeDirectory}/.dotfiles";
-      XDG_ARCHIVE_DIR = "${config.home.homeDirectory}/Archive";
+     #XDG_ARCHIVE_DIR = "${config.home.homeDirectory}/Archive";
       XDG_VM_DIR = "${config.home.homeDirectory}/Machines";
       XDG_ORG_DIR = "${config.home.homeDirectory}/Org";
       XDG_PODCAST_DIR = "${config.home.homeDirectory}/Media/Podcasts";

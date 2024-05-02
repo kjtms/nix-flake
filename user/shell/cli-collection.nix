@@ -5,6 +5,7 @@
   home.packages = with pkgs; [
     # Command Line
     disfetch lolcat cowsay
+    neofetch
     starfetch
     cava
     killall

@@ -236,35 +236,45 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) =
 
       -- Move focus to window below
       ((modm, xK_j), C.sequence_ [windowGo D True, switchLayer, warpToWindow 0.5 0.5]),
+      ((modm, xK_Down), C.sequence_ [windowGo D True, switchLayer, warpToWindow 0.5 0.5]),
       -- Move focus to window above
       ((modm, xK_k), C.sequence_ [windowGo U True, switchLayer, warpToWindow 0.5 0.5]),
+      ((modm, xK_Up), C.sequence_ [windowGo U True, switchLayer, warpToWindow 0.5 0.5]),
       -- Move focus to window left
       ((modm, xK_h), C.sequence_ [windowGo L True, switchLayer, warpToWindow 0.5 0.5]),
+      ((modm, xK_Left), C.sequence_ [windowGo L True, switchLayer, warpToWindow 0.5 0.5]),
       -- Move focus to window right
       ((modm, xK_l), C.sequence_ [windowGo R True, switchLayer, warpToWindow 0.5 0.5]),
+      ((modm, xK_Right), C.sequence_ [windowGo R True, switchLayer, warpToWindow 0.5 0.5]),
 
       -- Move focus to screen below
-      ((modm, xK_Down), C.sequence_ [screenGo D True, warpToCurrentScreen 0.5 0.5]),
+   --   ((modm, xK_Down), C.sequence_ [screenGo D True, warpToCurrentScreen 0.5 0.5]),
       -- Move focus to screen up
-      ((modm, xK_Up), C.sequence_ [screenGo U True, warpToCurrentScreen 0.5 0.5]),
+   --   ((modm, xK_Up), C.sequence_ [screenGo U True, warpToCurrentScreen 0.5 0.5]),
       -- Move focus to screen left
-      ((modm, xK_Left), C.sequence_ [screenGo L True, warpToCurrentScreen 0.5 0.5]),
+   --   ((modm, xK_Left), C.sequence_ [screenGo L True, warpToCurrentScreen 0.5 0.5]),
       -- Move focus to screen right
-      ((modm, xK_Right), C.sequence_ [screenGo R True, warpToCurrentScreen 0.5 0.5]),
+   --   ((modm, xK_Right), C.sequence_ [screenGo R True, warpToCurrentScreen 0.5 0.5]),
 
       -- Swap with window below
       ((modm .|. shiftMask, xK_j), C.sequence_ [windowSwap D True, windowGo U True, switchLayer]),
+      ((modm .|. shiftMask, xK_Down), C.sequence_ [windowSwap D True, windowGo U True, switchLayer]),
       -- Swap with window above
       ((modm .|. shiftMask, xK_k), C.sequence_ [windowSwap U True, windowGo D True, switchLayer]),
+      ((modm .|. shiftMask, xK_Up), C.sequence_ [windowSwap U True, windowGo D True, switchLayer]),
       -- Swap with window left
       ((modm .|. shiftMask, xK_h), C.sequence_ [windowSwap L True, windowGo R True, switchLayer]),
+      ((modm .|. shiftMask, xK_Left), C.sequence_ [windowSwap L True, windowGo R True, switchLayer]),
       -- Swap with window right
       ((modm .|. shiftMask, xK_l), C.sequence_ [windowSwap R True, windowGo L True, switchLayer]),
+      ((modm .|. shiftMask, xK_Right), C.sequence_ [windowSwap R True, windowGo L True, switchLayer]),
 
       -- Shrink the master area
       ((modm .|. controlMask, xK_h), sendMessage Shrink),
+      ((modm .|. controlMask, xK_Left), sendMessage Shrink),
       -- Expand the master area
       ((modm .|. controlMask, xK_l), sendMessage Expand),
+      ((modm .|. controlMask, xK_Right), sendMessage Expand),
 
       -- Swap the focused window and the master window
       ((modm, xK_m), windows W.swapMaster),

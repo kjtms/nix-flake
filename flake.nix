@@ -24,7 +24,7 @@
         email = "kjatten@pm.me"; # email (used for certain configurations)
         dotfilesDir = "~/.dotfiles"; # absolute path of the local repo
         theme = "uwunicorn-yt"; # selcted theme from my themes directory (./themes/)
-        wm = "xmonad"; # Selected window manager or desktop environment; must select one in both ./user/wm/ and ./system/wm/
+        wm = "hyprland"; # Selected window manager or desktop environment; must select one in both ./user/wm/ and ./system/wm/
         # window manager type (hyprland or x11) translator
         wmType = if (wm == "hyprland") then "wayland" else "x11";
         browser = "floorp"; # Default browser; must select one from ./user/app/browser/
