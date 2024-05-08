@@ -59,7 +59,7 @@
         gaps_in = 7;
         gaps_out = 7;
 
-        allow_tearing = false;
+        allow_tearing = true;
       };
 
       decoration = {
@@ -360,6 +360,7 @@
     swaybg
     fnott
     fuzzel
+    wofi
     keepmenu
     pinentry-gnome3
     wev

@@ -13,7 +13,7 @@
     layout = "us";
     xkbVariant = "";
     xkbOptions = "caps:escape";
-    videoDrivers = [ "nvidia" ];
+    videoDrivers = [ "amdgpu" ];
     excludePackages = [ pkgs.xterm ];
     displayManager = {
       lightdm.enable = true;

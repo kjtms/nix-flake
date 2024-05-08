@@ -39,7 +39,6 @@
     zsh
     alacritty
     librewolf
-    brave
     qutebrowser
     dmenu
     rofi

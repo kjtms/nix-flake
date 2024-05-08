@@ -1,4 +1,4 @@
-{ config, pkgs, ... }:
+{ config, pkgs, lib, ... }:
 
 {
   imports = [ ./pipewire.nix
@@ -23,11 +23,11 @@
   # Configure xwayland
   services.xserver = {
     enable = true;
-    videoDrivers = [ "nvidia" ];
+    videoDrivers = [ "amdgpu" ];
     xkb = {
       layout = "us";
       variant = "";
-      options = "caps:escape";
+     #options = "caps:escape";
     };
     displayManager.sddm = {
       enable = true;
@@ -37,10 +37,4 @@
     };
   };
 
-  # Nvidia is the worst company on earth
-  hardware.nvidia = {
-    nvidiaSettings = true;
-    modesetting.enable = true;
-    package = config.boot.kernelPackages.nvidiaPackages.beta;
-  };
 }

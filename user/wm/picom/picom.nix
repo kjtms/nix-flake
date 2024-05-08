@@ -13,7 +13,7 @@
         src = prev.fetchFromGitHub {
           owner = "pijulius";
           repo = "picom";
-          rev = "982bb43e5d4116f1a37a0bde01c9bda0b88705b9";
+          rev = "e7b14886ae644aaa657383f7c4f44be7797fd5f6";
           sha256 = "sha256-YiuLScDV9UfgI1MiYRtjgRkJ0VuA1TExATA2nJSJMhM=";
         };
         # Build dependencies

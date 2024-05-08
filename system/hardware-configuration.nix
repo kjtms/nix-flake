@@ -14,31 +14,34 @@
   boot.extraModulePackages = [ ];
 
   fileSystems."/" =
-    { device = "/dev/disk/by-uuid/0f5cc1f4-7b1f-45c5-b18c-127ffd7cd1b5";
+    { device = "/dev/disk/by-uuid/cc8b30af-8839-4ffb-b6c0-1e129abbe9ab";
       fsType = "btrfs";
       options = [ "subvol=@" ];
     };
 
   fileSystems."/boot" =
-    { device = "/dev/disk/by-uuid/720E-9507";
+    { device = "/dev/disk/by-uuid/C714-B5CD";
       fsType = "vfat";
     };
 
-  fileSystems."/mnt/arc" =
-    { device = "/dev/disk/by-uuid/a6edc64d-e8c4-4a0a-9b98-c47ff32479f4";
-      fsType = "ext4";
-    };
-  fileSystems."/mnt/arc2" =
-    { device = "/dev/disk/by-uuid/65a57720-5b64-43b7-a1dc-9e6bcf67fd45";
-      fsType = "ext4";
-    };
-  fileSystems."/mnt/sdd" =
+  fileSystems."/media/kjat/diskdisk" =
     { device = "/dev/disk/by-uuid/b5b799b9-1262-4e00-9941-0347b5e7d995";
       fsType = "ext4";
     };
 
+  fileSystems."/media/kjat/bigdisk" =
+    { device = "/dev/disk/by-uuid/a6edc64d-e8c4-4a0a-9b98-c47ff32479f4";
+      fsType = "ext4";
+    };
+
+  fileSystems."/var/lib/docker/btrfs" =
+    { device = "/@/var/lib/docker/btrfs";
+      fsType = "none";
+      options = [ "bind" ];
+    };
+
   swapDevices =
-    [ { device = "/dev/disk/by-uuid/f2eafbd0-2749-40c4-b44d-08b708289794"; }
+    [ { device = "/dev/disk/by-uuid/f7d21cc6-4e6d-4da9-a4c4-be5db8b8bc48"; }
     ];
 
   # Enables DHCP on each ethernet and wireless interface. In case of scripted networking
@@ -46,8 +49,9 @@
   # still possible to use this option, but it's recommended to use it in conjunction
   # with explicit per-interface declarations with `networking.interfaces.<interface>.useDHCP`.
   networking.useDHCP = lib.mkDefault true;
-  # networking.interfaces.enp6s0.useDHCP = lib.mkDefault true;
-  # networking.interfaces.wlp5s0.useDHCP = lib.mkDefault true;
+  # networking.interfaces.docker0.useDHCP = lib.mkDefault true;
+  # networking.interfaces.enp8s0.useDHCP = lib.mkDefault true;
+  # networking.interfaces.wlp7s0.useDHCP = lib.mkDefault true;
 
   nixpkgs.hostPlatform = lib.mkDefault "x86_64-linux";
   hardware.cpu.amd.updateMicrocode = lib.mkDefault config.hardware.enableRedistributableFirmware;

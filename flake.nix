@@ -23,11 +23,11 @@
         name = "kjtms"; # name/identifier
         email = "kjatten@pm.me"; # email (used for certain configurations)
         dotfilesDir = "~/.dotfiles"; # absolute path of the local repo
-        theme = "uwunicorn-yt"; # selcted theme from my themes directory (./themes/)
-        wm = "hyprland"; # Selected window manager or desktop environment; must select one in both ./user/wm/ and ./system/wm/
+        theme = "darkmoss"; # selcted theme from my themes directory (./themes/)
+        wm = "wayfire"; # Selected window manager or desktop environment; must select one in both ./user/wm/ and ./system/wm/
         # window manager type (hyprland or x11) translator
-        wmType = if (wm == "hyprland") then "wayland" else "x11";
-        browser = "floorp"; # Default browser; must select one from ./user/app/browser/
+        wmType = if (wm == "xmonad") then "x11" else "wayland";
+        browser = "librewolf"; # Default browser; must select one from ./user/app/browser/
         defaultRoamDir = "Personal.p"; # Default org roam directory relative to ~/Org
         term = "kitty"; # Default terminal command;
         font = "Intel One Mono"; # Selected font
