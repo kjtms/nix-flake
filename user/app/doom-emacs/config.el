@@ -42,17 +42,14 @@
   ))
   ;; On Linux I can enable blur, however
   (funcall (lambda ()
-    (set-frame-parameter nil 'alpha-background 75)
-    (add-to-list 'default-frame-alist '(alpha-background . 75))
+    (set-frame-parameter nil 'alpha-background 85)
+    (add-to-list 'default-frame-alist '(alpha-background . 85))
   ))
 )
 
 ;; Icons in completion buffers
 (add-hook 'marginalia-mode-hook #'all-the-icons-completion-marginalia-setup)
 (all-the-icons-completion-mode)
-
-;; This makes non-main buffers dimmer, so you can focus on main buffers
-(solaire-global-mode +1)
 
 ;; Grammar tasing should be voluntary
 (setq writegood-mode nil)
@@ -118,11 +115,13 @@
     ;; line 2
     ( (,"Git" "" "" (lambda (&rest _)) 'diredfl-exec-priv)
      (,(all-the-icons-octicon "mark-github" :height 1.0 :v-adjust 0.0)
-       "GitHub" "" (lambda (&rest _) (browse-url "ext+container:name=Tech&url=https://github.com/librephoenix")) 'diredfl-exec-priv)
+       "GitHub" "" (lambda (&rest _) (browse-url "https://github.com/librephoenix")) 'diredfl-exec-priv)
      (,(all-the-icons-faicon "gitlab" :height 1.0 :v-adjust 0.0)
-       "GitLab" "" (lambda (&rest _) (browse-url "ext+container:name=Tech&url=https://gitlab.com/librephoenix")) 'diredfl-exec-priv)
+       "GitLab" "" (lambda (&rest _) (browse-url "https://gitlab.com/librephoenix")) 'diredfl-exec-priv)
      (,(all-the-icons-faicon "coffee" :height 1.0 :v-adjust 0.0)
        "Gitea" "" (lambda (&rest _) (browse-url my-gitea-domain)) 'diredfl-exec-priv)
+     (,(all-the-icons-octicon "triangle-up" :height 1.2 :v-adjust -0.1)
+       "Codeberg" "" (lambda (&rest _) (browse-url "https://codeberg.org/librephoenix")) 'diredfl-exec-priv)
     )
     ;; line 3
     ( (,"Agenda" "" "" (lambda (&rest _)) 'dired-warning)
@@ -190,6 +189,23 @@
 ;; For camelCase
 (global-subword-mode 1)
 
+;; Mini-frames ;; cool but kinda suboptimal atm
+;(add-load-path! "~/.emacs.d/mini-frame")
+;(require 'mini-frame)
+;(setq mini-frame-ignore-commands '(evil-ex-search-forward helpful-variable helpful-callable))
+;(setq mini-frame-show-parameters
+;    '((left . 216)
+;     (top . 240)
+;     (width . 0.78)
+;     (height . 20)
+;     (alpha-background . 90))
+;)
+;(setq mini-frame-detach-on-hide nil)
+;(setq mini-frame-resize t)
+;(setq resize-mini-frames t)
+;(setq mini-frame-standalone nil)
+;(mini-frame-mode 1)
+
 ;;;------ Registers ------;;;
 
 (map! :leader
@@ -225,7 +241,9 @@
   '(org-level-5 :inherit outline-5 :height 1.1)
   '(org-level-6 :inherit outline-6 :height 1.05)
   '(org-level-7 :inherit outline-7 :height 1.05)
+  '(variable-pitch :family "Intel One Mono")
   )
+
 
 (after! org (org-eldoc-load))
 
@@ -255,7 +273,7 @@
   org-pretty-entities t
   org-ellipsis "…")
 
-(setq-default line-spacing 0.15)
+(setq-default line-spacing 0)
 
 ; Automatic table of contents is nice
 (if (require 'toc-org nil t)
@@ -408,10 +426,51 @@ same directory as the org-buffer and insert a link to this file."
                     '(file))
            (list (openwith-make-extension-regexp
                   '("flp"))
-                    "~/.local/bin/flstudio"
+                    "flstudio"
+                    '(file))
+           (list (openwith-make-extension-regexp
+                  '("mid"))
+                    "rosegarden"
                     '(file))
                ))
      (openwith-mode 1)))
+
+(add-load-path! "~/.emacs.d/org-krita")
+(require 'org-krita)
+(add-hook 'org-mode-hook 'org-krita-mode)
+(setq org-krita-extract-filename "preview.png")
+(setq org-krita-scale 1)
+
+(add-load-path! "~/.emacs.d/org-xournalpp")
+(require 'org-xournalpp)
+(add-hook 'org-mode-hook 'org-xournalpp-mode)
+(setq org-xournalpp-template-getter
+  '(closure
+    (t)
+    nil
+    (file-truename "~/Templates/template.xopp") ; use my own template
+  )
+)
+
+;; override width to static 250 for now
+;; so I don't have massive images in org mode (scrolling not fun)
+(defun org-xournalpp--create-image (link refresh)
+  "Extract svg/png from given LINK and return image.
+
+Regenerate the cached inline image, if REFRESH is true.
+
+If the path from LINK does not exist, nil is returned."
+  (let ((width 250)
+        (xopp-path (f-expand (org-element-property :path link))))
+    (when (f-exists? xopp-path)
+        (if width
+            (create-image (org-xournalpp--get-image xopp-path refresh)
+                          org-xournalpp-image-type
+                          nil
+                          :width width)
+          (create-image (org-xournalpp--get-image xopp-path refresh)
+                        org-xournalpp-image-type
+                        nil)))))
 
 (defun org-copy-link-to-clipboard-at-point ()
   "Copy current link at point into clipboard (useful for images and links)"
@@ -527,6 +586,8 @@ same directory as the org-buffer and insert a link to this file."
    :desc "Org Transclusion Mode" "t" #'org-transclusion-mode))
 (map! :leader :prefix "n" "l" #'org-transclusion-live-sync-start)
 
+(setq org-transclusion-exclude-elements '(property-drawer keyword))
+
 (add-hook 'org-mode-hook #'org-transclusion-mode)
 
 (defun org-jekyll-new-post ()
@@ -564,6 +625,40 @@ same directory as the org-buffer and insert a link to this file."
 
       :desc "Rename or redate blog post and update links accordingly"
       "e" #'org-jekyll-rename-post
+)
+
+(require 'crdt)
+(setq crdt-default-tls nil)
+(setq crdt-default-name "Emmet")
+(if (file-exists-p "~/.emacs.d/crdt-private.el") (load! "~/.emacs.d/crdt-private.el"))
+(defun crdt-connect-default ()
+  (interactive)
+  (crdt-connect crdt-default-server-address crdt-default-name)
+)
+(map! :leader
+      :desc "crdt"
+      :prefix ("C")
+
+      :desc "Connect to a crdt server"
+      "c" #'crdt-connect-default
+
+      :desc "Connect to default crdt server"
+      "C" #'crdt-connect-default
+
+      :desc "Disconnect from a crdt server"
+      "d" #'crdt-disconnect
+
+      :desc "Add buffer to a session"
+      "a" #'crdt-share-buffer
+
+      :desc "Stop sharing buffer to session"
+      "s" #'crdt-stop-share-buffer
+
+      :desc "List crdt buffers in a session"
+      "l" #'crdt-list-buffers
+
+      :desc "List crdt users in a session"
+      "u" #'crdt-list-users
 )
 
 ;;;------ Org roam configuration ------;;;
@@ -777,13 +872,20 @@ same directory as the org-buffer and insert a link to this file."
   (setq org-agenda-files (append org-agenda-files (org-roam-list-notes-by-tag "todos")))
 )
 
+(defun org-roam-append-ids-to-org-id-files (db)
+  (org-roam-switch-db db t)
+  (setq org-id-files (append org-id-files (org-roam-list-files)))
+)
+
 ;; Refreshing org roam agenda
 (defun org-roam-refresh-agenda-list ()
   (interactive)
   (setq prev-org-roam-db-choice org-roam-db-choice)
   (setq org-agenda-files '())
+  (setq org-id-files '())
   (dolist (DB full-org-roam-db-list-pretty)
     (org-roam-append-notes-to-agenda "todos" DB)
+    (org-roam-append-ids-to-org-id-files DB)
   )
   (setq org-agenda-files (-uniq org-agenda-files))
   (org-roam-switch-db prev-org-roam-db-choice 1)
@@ -919,6 +1021,7 @@ same directory as the org-buffer and insert a link to this file."
       org-agenda-skip-scheduled-if-deadline-is-shown t
       org-agenda-skip-timestamp-if-deadline-is-shown t)
 
+
 ;; Custom styles for dates in agenda
 (custom-set-faces!
   '(org-agenda-date :inherit outline-1 :height 1.15)
@@ -926,6 +1029,8 @@ same directory as the org-buffer and insert a link to this file."
   '(org-agenda-date-weekend :ineherit outline-2 :height  1.15)
   '(org-agenda-date-weekend-today :inherit outline-4 :height 1.15)
   '(org-super-agenda-header :inherit custom-button :weight bold :height 1.05)
+  `(link :foreground unspecified :underline nil :background ,(nth 1 (nth 7 doom-themes--colors)))
+  '(org-link :foreground unspecified)
   )
 
 ;; Toggle completed entries function
@@ -964,6 +1069,9 @@ same directory as the org-buffer and insert a link to this file."
         ("Knowledge.p" ,(list (all-the-icons-faicon "database" :height 0.8)) nil nil :ascent center)
         ("Personal.p" ,(list (all-the-icons-material "person" :height 0.9)) nil nil :ascent center)
 ))
+
+(defalias 'org-timestamp-down 'org-timestamp-down-day)
+(defalias 'org-timestamp-up 'org-timestamp-up-day)
 
 (defun org-categorize-by-roam-db-on-save ()
   (interactive)
@@ -1111,24 +1219,12 @@ same directory as the org-buffer and insert a link to this file."
       :map org-super-agenda-header-map
       "k" 'org-agenda-previous-line)
 
-(add-load-path! "~/.emacs.d/org-timeblock")
-(require 'org-timeblock)
+(require 'calfw)
+(require 'calfw-org)
+(setq cfw:org-agenda-schedule-args '(:timestamp))
 
-(map! :leader :desc "Open org timeblock"
-      "O c" 'org-timeblock)
-
-(map! :desc "Next day"
-      :map org-timeblock-mode-map
-      :nvmeg "l" 'org-timeblock-day-later)
-(map! :desc "Previous day"
-      :map org-timeblock-mode-map
-      :nvmeg "h" 'org-timeblock-day-earlier)
-(map! :desc "Schedule event"
-      :map org-timeblock-mode-map
-      :nvmeg "m" 'org-timeblock-schedule)
-(map! :desc "Event duration"
-      :map org-timeblock-mode-map
-      :nvmeg "d" 'org-timeblock-set-duration)
+(map! :leader :desc "Open org calendar"
+      "O c" 'cfw:open-org-calendar)
 
 ;;;------ magit configuration ------;;;
 ;; Need the following two blocks to make magit work with git bare repos
@@ -1147,25 +1243,28 @@ https://github.com/magit/magit/issues/460 (@cpitclaudel)."
             :filter-return #'~/magit-process-environment)
 
 (require 'magit-todos)
+(setq magit-todos-keywords-list '("TODO" "FIXME" "HACK" "REVIEW" "DEPRECATED" "BUG"))
 (magit-todos-mode 1)
 
-(evil-set-initial-state 'ibuffer-mode 'motion)
-(evil-define-key 'motion 'ibuffer-mode
-  "j" 'evil-next-visual-line
-  "k" 'evil-previous-visual-line
-  "d" 'ibuffer-mark-for-delete
-  "q" 'kill-buffer
-  (kbd "<return>") 'ibuffer-visit-buffer)
+(require 'all-the-icons-ibuffer)
+(add-hook 'ibuffer-mode-hook #'all-the-icons-ibuffer-mode)
+(setq all-the-icons-ibuffer-color-icon t)
+(evil-set-initial-state 'ibuffer-mode 'normal)
 
 ;;;------ dired configuration ------;;;
 
 (add-hook 'dired-mode-hook 'all-the-icons-dired-mode)
+(setq all-the-icons-dired-monochrome nil)
 
 (map! :desc "Increase font size"
       "C-=" 'text-scale-increase
 
       :desc "Decrease font size"
-      "C--" 'text-scale-decrease)
+      "C--" 'text-scale-decrease
+
+      :desc "Jump to dired"
+      "M-f" 'dired-jump
+)
 
 ;;;------ ranger configuration ------;;;
 
@@ -1175,9 +1274,7 @@ https://github.com/magit/magit/issues/460 (@cpitclaudel)."
 
       :desc "Toggle mark on current file"
       "x" 'ranger-toggle-mark
-
-      :desc "Open ranger"
-      "o d" 'ranger)
+)
 
 ;;;-- hledger-mode configuration ;;;--
 
@@ -1246,12 +1343,13 @@ https://github.com/magit/magit/issues/460 (@cpitclaudel)."
   "q" 'helpful-kill-buffers)
 
 ;;;------ helpful configuration ------;;;
-(add-load-path! "~/.nix-profile/share/emacs/site-lisp/elpa/mu4e-1.12.1")
+(add-load-path! "~/.nix-profile/share/emacs/site-lisp/elpa/mu4e-1.12.2")
 (require 'mu4e)
 (require 'mu4e-contrib)
 (require 'mu4e-actions)
 
 (after! mu4e
+  (setq mu4e-modeline-support nil)
   (setq mu4e-sent-folder (lambda (msg) (concat "/" (nth 1 (split-string (mu4e-message-field msg :maildir) "/" )) "/Sent")))
   (setq mu4e-drafts-folder (lambda (msg) (concat "/" user-mail-address "/Drafts")))
   (setq mu4e-trash-folder (lambda (msg) (concat "/" (nth 1 (split-string (mu4e-message-field msg :maildir) "/" )) "/Trash")))
@@ -1259,6 +1357,8 @@ https://github.com/magit/magit/issues/460 (@cpitclaudel)."
 
   (setq mu4e-index-lazy-check t)
   (setq mu4e-index-cleanup t)
+  (setq mu4e-update-interval 120)
+  (mu4e-alert-enable-notifications)
 
   (define-key mu4e-main-mode-map (kbd "<SPC>") #'doom/leader)
   (define-key mu4e-headers-mode-map (kbd "<SPC>") #'doom/leader)
@@ -1344,6 +1444,8 @@ https://github.com/magit/magit/issues/460 (@cpitclaudel)."
   (add-hook 'mu4e-compose-mode-hook #'no-auto-fill)
   (add-hook 'mu4e-compose-pre-hook #'no-org-msg-mode)
 
+  (mu4e--start) ;; start mu4e silently
+
 )
 
 ;;;-- Load emacs direnv;;;--
@@ -1366,6 +1468,7 @@ https://github.com/magit/magit/issues/460 (@cpitclaudel)."
 (map! :leader
       :desc "Projectile grep"
       "/" #'projectile-grep)
+(after! projectile (put 'projectile-grep 'disabled nil))
 
 ;;;-- projectile wrapper commands ;;;--
 (require 'sudo-edit)
@@ -1408,7 +1511,8 @@ https://github.com/magit/magit/issues/460 (@cpitclaudel)."
 
 (setq +format-on-save-enabled-modes '(not emacs-lisp-mode sql-mode tex-mode latex-mode org-msg-edit-mode nix-mode))
 
-
+(add-to-list 'tramp-remote-path 'tramp-own-remote-path)
+(add-to-list 'vterm-tramp-shells '("ssh" "zsh")) ;; I use zsh on all my servers
 
 ;; I source my rss from my freshrss instance
 ;; I login with a private elisp file: ~/.emacs.d/freshrss-elfeed.el

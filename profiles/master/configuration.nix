@@ -8,20 +8,18 @@
     [ ../../system/hardware-configuration.nix
       ../../system/hardware/systemd.nix # systemd config
       ../../system/hardware/kernel.nix # Kernel config
-      ../../system/hardware/power.nix # Power management
-     #../../system/hardware/openrgb.nix
+     #../../system/hardware/power.nix # Power management
       ../../system/hardware/time.nix # Network time sync
       ../../system/hardware/opengl.nix
       ../../system/hardware/printing.nix
       ../../system/hardware/bluetooth.nix
       (./. + "../../../system/wm"+("/"+userSettings.wm)+".nix") # My window manager
-      #../../system/app/flatpak.nix
-      ../../system/app/virtualization.nix
-      ( import ../../system/app/docker.nix {storageDriver = "btrfs"; inherit userSettings lib;} )
       ../../system/app/flatpak.nix
+      ../../system/app/virtualization.nix
+      ( import ../../system/app/docker.nix {storageDriver = null; inherit userSettings lib;} )
       ../../system/app/gamemode.nix
       ../../system/app/games.nix
-      ../../system/security/doas.nix
+      ../../system/security/doas.nix # Replace sudo with doas
       ../../system/security/gpg.nix
      #../../system/security/blocklist.nix
       ../../system/security/firewall.nix
@@ -83,9 +81,14 @@
   users.users.${userSettings.username} = {
     isNormalUser = true;
     description = userSettings.name;
-    extraGroups = [ "networkmanager" "wheel" ];
+    extraGroups = [ "networkmanager" "wheel" "input" "dialout" ];
     packages = [];
     uid = 1000;
+  };
+
+  programs.nh = {
+    enable = true;
+    flake = "/home/kjat/.dotfiles";
   };
 
   # System packages
@@ -93,18 +96,20 @@
     vim
     wget
     zsh
+    nushell
     git
     cryptsetup
     home-manager
+    wpa_supplicant
     xfce.thunar
     zsa-udev-rules
+    polkit_gnome
     xdg-desktop-portal-gtk
   ];
 
   # I use zsh btw
-  environment.shells = with pkgs; [ zsh ];
-  users.defaultUserShell = pkgs.zsh;
-  programs.zsh.enable = true;
+  environment.shells = with pkgs; [ nushell ];
+  users.defaultUserShell = pkgs.nushell;
 
   fonts.fontDir.enable = true;
 

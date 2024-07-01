@@ -4,9 +4,10 @@
   imports =
     [ ../../system/hardware-configuration.nix
       ../../system/hardware/time.nix # Network time sync
+      ../../system/security/firewall.nix
       ../../system/security/doas.nix
       ../../system/security/gpg.nix
-      ( import ../../system/app/docker.nix {storageDriver = "btrfs"; inherit userSettings pkgs lib;} )
+      ( import ../../system/app/docker.nix {storageDriver = null; inherit pkgs userSettings lib;} )
     ];
 
   # Fix nix path
@@ -71,9 +72,14 @@
     git
     rclone
     rdiff-backup
+    rsnapshot
     cryptsetup
     gocryptfs
   ];
+
+  programs.fuse.userAllowOther = true;
+
+  services.haveged.enable = true;
 
   # I use zsh btw
   environment.shells = with pkgs; [ zsh ];
@@ -82,5 +88,7 @@
 
   # It is ok to leave this unchanged for compatibility purposes
   system.stateVersion = "22.11";
+
+  news.display = "silent";
 
 }

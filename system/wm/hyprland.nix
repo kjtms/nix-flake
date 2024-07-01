@@ -1,18 +1,15 @@
-{ pkgs, ... }:
-
+{ inputs, pkgs, lib, ... }: let
+  pkgs-hyprland = inputs.hyprland.inputs.nixpkgs.legacyPackages.${pkgs.stdenv.hostPlatform.system};
+in
 {
   # Import wayland config
   imports = [ ./wayland.nix
+              ./pipewire.nix
+              ./dbus.nix
             ];
 
   # Security
   security = {
-    pam.services.swaylock = {
-      text = ''
-        auth include login
-      '';
-    };
-#    pam.services.gtklock = {};
     pam.services.login.enableGnomeKeyring = true;
   };
 
@@ -21,10 +18,16 @@
   programs = {
     hyprland = {
       enable = true;
+      package = inputs.hyprland.packages.${pkgs.system}.hyprland;
       xwayland = {
         enable = true;
       };
-      portalPackage = pkgs.xdg-desktop-portal-hyprland;
+      portalPackage = pkgs-hyprland.xdg-desktop-portal-hyprland;
     };
   };
+  environment = {
+    plasma5.excludePackages = [ pkgs.kdePackages.systemsettings ];
+    plasma6.excludePackages = [ pkgs.kdePackages.systemsettings ];
+  };
+  services.xserver.excludePackages = [ pkgs.xterm ];
 }

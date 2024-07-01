@@ -13,7 +13,6 @@
     layout = "us";
     xkbVariant = "";
     xkbOptions = "caps:escape";
-    videoDrivers = [ "amdgpu" ];
     excludePackages = [ pkgs.xterm ];
     displayManager = {
       lightdm.enable = true;
@@ -27,14 +26,6 @@
     };
     libinput = {
       touchpad.disableWhileTyping = true;
-      mouse.accelProfile = "flat";
-      mouse.accelSpeed = "-0.1";
     };
-  };
-
-  # Nvidia is the worst company on earth
-  hardware.nvidia = {
-    nvidiaSettings = true;
-    modesetting.enable = true;
   };
 }

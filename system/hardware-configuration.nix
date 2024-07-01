@@ -14,34 +14,31 @@
   boot.extraModulePackages = [ ];
 
   fileSystems."/" =
-    { device = "/dev/disk/by-uuid/cc8b30af-8839-4ffb-b6c0-1e129abbe9ab";
+    { device = "/dev/disk/by-uuid/c4475bf8-8d17-42fb-9271-13c519ca996f";
       fsType = "btrfs";
       options = [ "subvol=@" ];
     };
 
   fileSystems."/boot" =
-    { device = "/dev/disk/by-uuid/C714-B5CD";
+    { device = "/dev/disk/by-uuid/7B41-81F1";
       fsType = "vfat";
+      options = [ "fmask=0022" "dmask=0022" ];
     };
-
-  fileSystems."/media/kjat/diskdisk" =
-    { device = "/dev/disk/by-uuid/b5b799b9-1262-4e00-9941-0347b5e7d995";
-      fsType = "ext4";
-    };
-
-  fileSystems."/media/kjat/bigdisk" =
+  fileSystems."/mnt/A" =
     { device = "/dev/disk/by-uuid/a6edc64d-e8c4-4a0a-9b98-c47ff32479f4";
       fsType = "ext4";
     };
-
-  fileSystems."/var/lib/docker/btrfs" =
-    { device = "/@/var/lib/docker/btrfs";
-      fsType = "none";
-      options = [ "bind" ];
+  fileSystems."/mnt/R" =
+    { device = "/dev/disk/by-uuid/b5b799b9-1262-4e00-9941-0347b5e7d995";
+      fsType = "ext4";
+    };
+  fileSystems."/mnt/B" =
+    { device = "/dev/disk/by-uuid/e7d64304-ab71-4a81-8fbe-3e84f72825cf";
+      fsType = "ext4";
     };
 
   swapDevices =
-    [ { device = "/dev/disk/by-uuid/f7d21cc6-4e6d-4da9-a4c4-be5db8b8bc48"; }
+    [ { device = "/dev/disk/by-uuid/5500a064-6bcd-4a83-aed1-b72d7180aa27"; }
     ];
 
   # Enables DHCP on each ethernet and wireless interface. In case of scripted networking
@@ -49,7 +46,6 @@
   # still possible to use this option, but it's recommended to use it in conjunction
   # with explicit per-interface declarations with `networking.interfaces.<interface>.useDHCP`.
   networking.useDHCP = lib.mkDefault true;
-  # networking.interfaces.docker0.useDHCP = lib.mkDefault true;
   # networking.interfaces.enp8s0.useDHCP = lib.mkDefault true;
   # networking.interfaces.wlp7s0.useDHCP = lib.mkDefault true;
 

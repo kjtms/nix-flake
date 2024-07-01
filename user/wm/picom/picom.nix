@@ -1,4 +1,4 @@
-{ pkgs, lib, ... }:
+{ pkgs, ... }:
 
 {
   home.packages = with pkgs; [
@@ -6,22 +6,16 @@
   ];
 
   nixpkgs.overlays = [
-    (final: prev:
+    (self: super:
       {
-        picom = prev.picom.overrideAttrs (oldAttrs: rec {
-        #version = "unstable-2021-10-23"; # Doesn't matter as far as I know
-        src = prev.fetchFromGitHub {
+        picom = super.picom.overrideAttrs (oldAttrs: rec {
+        version = "unstable-2021-10-23";
+        src = super.fetchFromGitHub {
           owner = "pijulius";
           repo = "picom";
-          rev = "e7b14886ae644aaa657383f7c4f44be7797fd5f6";
+          rev = "982bb43e5d4116f1a37a0bde01c9bda0b88705b9";
           sha256 = "sha256-YiuLScDV9UfgI1MiYRtjgRkJ0VuA1TExATA2nJSJMhM=";
         };
-        # Build dependencies
-        nativeBuildInputs = oldAttrs.nativeBuildInputs ++ [
-            final.meson
-            final.cmake
-            final.pcre
-            ];
 
         meta = with builtins.lib; {
           description = "A fork of picom featuring better animations";

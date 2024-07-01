@@ -8,27 +8,14 @@ let
     htop = "btm";
     fd = "fd -Lu";
     w3m = "w3m -no-cookie -v";
+   #neofetch = "disfetch";
     fetch = "disfetch";
     gitfetch = "onefetch";
-    nixos-rebuild = "systemd-run --no-ask-password --uid=0 --system --scope -p MemoryLimit=16000M -p CPUQuota=60% nixos-rebuild";
-    home-manager = "systemd-run --no-ask-password --uid=1000 --user --scope -p MemoryLimit=16000M -p CPUQuota=60% home-manager";
+    nhos = "nh os switch --hostname system --ask";
+    nhome = "nh home switch --configuration user --ask";
   };
 in
 {
-  programs.zsh = {
-    enable = true;
-    enableAutosuggestions = true;
-    enableCompletion = true;
-    syntaxHighlighting.enable = true;
-    shellAliases = myAliases;
-    initExtra = ''
-    PROMPT=" ◉ %U%F{magenta}%n%f%u@%U%F{blue}%m%f%u:%F{yellow}%~%f
-     %F{green}→%f "
-    RPROMPT="%F{red}▂%f%F{yellow}▄%f%F{green}▆%f%F{cyan}█%f%F{blue}▆%f%F{magenta}▄%f%F{white}▂%f"
-    [ $TERM = "dumb" ] && unsetopt zle && PS1='$ '
-    '';
-  };
-
   programs.bash = {
     enable = true;
     enableCompletion = true;
@@ -36,13 +23,70 @@ in
   };
 
   home.packages = with pkgs; [
-    disfetch lolcat cowsay onefetch
-    gnugrep gnused
-    bat eza bottom fd bc
+    bat
+    eza
+    bottom
+    fd
+    bc
     direnv nix-direnv
-  ];
-
+    yazi
+    zoxide
+    carapace
+    keychain
+    thefuck
+    broot
+    atuin
+  ] ++ (with nushellPlugins; [
+    net
+    gstat
+    formats
+  ]);
+  programs.yazi.enableNushellIntegration = true;
+  programs.eza.enableNushellIntegration = true;
+  programs.zoxide.enableNushellIntegration = true;
+  programs.carapace.enableNushellIntegration = true;
+  services.gpg-agent.enableNushellIntegration = true;
+  services.gpg-agent.enable = true;
+  programs.keychain.enableNushellIntegration = true;
+  programs.thefuck.enableNushellIntegration = true;
+  programs.broot.enableNushellIntegration = true;
+  programs.atuin.enableNushellIntegration = true;
   programs.direnv.enable = true;
-  programs.direnv.enableZshIntegration = true;
   programs.direnv.nix-direnv.enable = true;
+  programs.direnv.enableNushellIntegration = true;
+
+  programs.nushell = {
+    enable = true;
+    shellAliases = myAliases;
+    extraConfig = ''
+      $env.config = {
+        show_banner: false
+        completions: {
+          case_sensitive: false
+          quick: true
+          partial: true
+          use_ls_colors: true
+        }
+        ls: {
+          use_ls_colors: true
+          clickable_links: true
+        }
+        error_style: "fancy"
+        history: {
+          max_size: 100_000
+          sync_on_enter: true
+          file_format: "plaintext"
+        }
+        filesize: {
+          metric: true
+          format: "auto"
+        }
+      }
+    '';
+  };
+  programs.oh-my-posh = {
+    enable = true;
+    enableNushellIntegration = true;
+    useTheme = "easy-term";
+  };
 }

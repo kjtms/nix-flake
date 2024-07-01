@@ -1,9 +1,7 @@
 {
   description = "Flake of LibrePhoenix";
 
-  outputs = inputs@{ self, nixpkgs, nixpkgs-stable, kdenlive-pin-nixpkgs, home-manager, nix-doom-emacs,
-                     nix-straight, stylix, blocklist-hosts, hyprland-plugins, rust-overlay,
-                     org-nursery, org-yaap, org-side-tree, org-timeblock, phscroll, ... }:
+  outputs = inputs@{ self, ... }:
     let
       # ---- SYSTEM SETTINGS ---- #
       systemSettings = {
@@ -23,8 +21,8 @@
         name = "kjtms"; # name/identifier
         email = "kjatten@pm.me"; # email (used for certain configurations)
         dotfilesDir = "~/.dotfiles"; # absolute path of the local repo
-        theme = "darkmoss"; # selcted theme from my themes directory (./themes/)
-        wm = "wayfire"; # Selected window manager or desktop environment; must select one in both ./user/wm/ and ./system/wm/
+        theme = "gruvbox-dark-hard"; # selcted theme from my themes directory (./themes/)
+        wm = "hyprland"; # Selected window manager or desktop environment; must select one in both ./user/wm/ and ./system/wm/
         # window manager type (hyprland or x11) translator
         wmType = if (wm == "xmonad") then "x11" else "wayland";
         browser = "librewolf"; # Default browser; must select one from ./user/app/browser/
@@ -50,36 +48,64 @@
 
       # create patched nixpkgs
       nixpkgs-patched =
-        (import nixpkgs { system = systemSettings.system; }).applyPatches {
+        (import inputs.nixpkgs { system = systemSettings.system; }).applyPatches {
           name = "nixpkgs-patched";
-          src = nixpkgs;
+          src = inputs.nixpkgs;
           patches = [ ./patches/emacs-no-version-check.patch ];
         };
 
       # configure pkgs
-      pkgs = import nixpkgs-patched {
+      # use nixpkgs if running a server (homelab or worklab profile)
+      # otherwise use patched nixos-unstable nixpkgs
+      pkgs = (if ((systemSettings.profile == "homelab") || (systemSettings.profile == "worklab"))
+              then
+                pkgs-stable
+              else
+                (import nixpkgs-patched {
+                  system = systemSettings.system;
+                  config = {
+                    allowUnfree = true;
+                    allowUnfreePredicate = (_: true);
+                  };
+                  overlays = [ inputs.rust-overlay.overlays.default ];
+                }));
+
+      pkgs-stable = import inputs.nixpkgs-stable {
         system = systemSettings.system;
         config = {
           allowUnfree = true;
           allowUnfreePredicate = (_: true);
         };
-        overlays = [ rust-overlay.overlays.default ];
       };
 
-      pkgs-stable = import nixpkgs-stable {
+      pkgs-emacs = import inputs.emacs-pin-nixpkgs {
         system = systemSettings.system;
-        config = {
-          allowUnfree = true;
-          allowUnfreePredicate = (_: true);
-        };
       };
 
-      pkgs-kdenlive = import kdenlive-pin-nixpkgs {
+      pkgs-kdenlive = import inputs.kdenlive-pin-nixpkgs {
+        system = systemSettings.system;
+      };
+
+      pkgs-nwg-dock-hyprland = import inputs.nwg-dock-hyprland-pin-nixpkgs {
         system = systemSettings.system;
       };
 
       # configure lib
-      lib = nixpkgs.lib;
+      # use nixpkgs if running a server (homelab or worklab profile)
+      # otherwise use patched nixos-unstable nixpkgs
+      lib = (if ((systemSettings.profile == "homelab") || (systemSettings.profile == "worklab"))
+             then
+               inputs.nixpkgs-stable.lib
+             else
+               inputs.nixpkgs.lib);
+
+      # use home-manager-stable if running a server (homelab or worklab profile)
+      # otherwise use home-manager-unstable
+      home-manager = (if ((systemSettings.profile == "homelab") || (systemSettings.profile == "worklab"))
+             then
+               inputs.home-manager-stable
+             else
+               inputs.home-manager-unstable);
 
       # Systems that can run tests:
       supportedSystems = [ "aarch64-linux" "i686-linux" "x86_64-linux" ];
@@ -96,25 +122,17 @@
         user = home-manager.lib.homeManagerConfiguration {
           inherit pkgs;
           modules = [
-            (./. + "/profiles" + ("/" + systemSettings.profile)
-              + "/home.nix") # load home.nix from selected PROFILE
-            #  inputs.nix-flatpak.homeManagerModules.nix-flatpak # Declarative flatpaks
+            (./. + "/profiles" + ("/" + systemSettings.profile) + "/home.nix") # load home.nix from selected PROFILE
           ];
           extraSpecialArgs = {
             # pass config variables from above
             inherit pkgs-stable;
+            inherit pkgs-emacs;
             inherit pkgs-kdenlive;
+            inherit pkgs-nwg-dock-hyprland;
             inherit systemSettings;
             inherit userSettings;
-            inherit (inputs) nix-doom-emacs;
-            inherit (inputs) org-nursery;
-            inherit (inputs) org-yaap;
-            inherit (inputs) org-side-tree;
-            inherit (inputs) org-timeblock;
-            inherit (inputs) phscroll;
-            #inherit (inputs) nix-flatpak;
-            inherit (inputs) stylix;
-            inherit (inputs) hyprland-plugins;
+            inherit inputs;
           };
         };
       };
@@ -122,16 +140,15 @@
         system = lib.nixosSystem {
           system = systemSettings.system;
           modules = [
-            (./. + "/profiles" + ("/" + systemSettings.profile)
-              + "/configuration.nix")
+            (./. + "/profiles" + ("/" + systemSettings.profile) + "/configuration.nix")
+            ./system/bin/phoenix.nix
           ]; # load configuration.nix from selected PROFILE
           specialArgs = {
             # pass config variables from above
             inherit pkgs-stable;
             inherit systemSettings;
             inherit userSettings;
-            inherit (inputs) stylix;
-            inherit (inputs) blocklist-hosts;
+            inherit inputs;
           };
         };
       };
@@ -161,13 +178,33 @@
   inputs = {
     nixpkgs.url = "nixpkgs/nixos-unstable";
     nixpkgs-stable.url = "nixpkgs/nixos-23.11";
+    emacs-pin-nixpkgs.url = "nixpkgs/f72123158996b8d4449de481897d855bc47c7bf6";
     kdenlive-pin-nixpkgs.url = "nixpkgs/cfec6d9203a461d9d698d8a60ef003cac6d0da94";
+    nwg-dock-hyprland-pin-nixpkgs.url = "nixpkgs/2098d845d76f8a21ae4fe12ed7c7df49098d3f15";
 
-    home-manager.url = "github:nix-community/home-manager/master";
-    home-manager.inputs.nixpkgs.follows = "nixpkgs";
+    home-manager-unstable.url = "github:nix-community/home-manager/master";
+    home-manager-unstable.inputs.nixpkgs.follows = "nixpkgs";
+
+    home-manager-stable.url = "github:nix-community/home-manager/release-23.11";
+    home-manager-stable.inputs.nixpkgs.follows = "nixpkgs-stable";
+
+    hyprland = {
+      type = "git";
+      url = "https://github.com/hyprwm/Hyprland";
+      submodules = true;
+      rev = "ea2501d4556f84d3de86a4ae2f4b22a474555b9f";
+    };
+    hyprland.inputs.nixpkgs.follows = "nixpkgs";
+    hyprland-plugins.url = "github:hyprwm/hyprland-plugins/151102b7d7c4f61ff42f275e72008d28318dac96";
+    hyprland-plugins.inputs.hyprland.follows = "hyprland";
+    hycov.url = "github:DreamMaoMao/hycov/3d144a79f8b5468656de88a005be55f3317d295b";
+    hycov.inputs.hyprland.follows = "hyprland";
+    # FIXME hyprgrass broken on 0.41.0
+    #hyprgrass.url = "github:horriblename/hyprgrass/6d8dbbcfb14ebdb2a2a2551b7d495d01d8ef6917";
+    #hyprgrass.inputs.hyprland.follows = "hyprland";
 
     nix-doom-emacs.url = "github:nix-community/nix-doom-emacs";
-    nix-doom-emacs.inputs.nixpkgs.follows = "nixpkgs";
+    nix-doom-emacs.inputs.nixpkgs.follows = "emacs-pin-nixpkgs";
 
     nix-straight.url = "github:librephoenix/nix-straight.el/pgtk-patch";
     nix-straight.flake = false;
@@ -197,8 +234,24 @@
       url = "github:ichernyshovvv/org-timeblock";
       flake = false;
     };
+    org-krita = {
+      url = "github:librephoenix/org-krita";
+      flake = false;
+    };
+    org-xournalpp = {
+      url = "gitlab:vherrmann/org-xournalpp";
+      flake = false;
+    };
+    org-sliced-images = {
+      url = "github:jcfk/org-sliced-images";
+      flake = false;
+    };
     phscroll = {
       url = "github:misohena/phscroll";
+      flake = false;
+    };
+    mini-frame = {
+      url = "github:muffinmad/emacs-mini-frame";
       flake = false;
     };
 
@@ -208,11 +261,6 @@
 
     blocklist-hosts = {
       url = "github:StevenBlack/hosts";
-      flake = false;
-    };
-
-    hyprland-plugins = {
-      url = "github:hyprwm/hyprland-plugins";
       flake = false;
     };
   };

@@ -1,32 +1,54 @@
 { pkgs, ... }:
-
 {
   # Collection of useful CLI apps
   home.packages = with pkgs; [
-    # Command Line
-    disfetch lolcat cowsay
-    neofetch
+    # I am an arch user by heart
+    disfetch
+    neofetch hyfetch
     starfetch
+    octofetch onefetch
+    onefetch
+    cpufetch
+    ipfetch
+    pfetch
+
+    # Funny little things
+    lolcat uwuify
+    cowsay
     cava
+    cbonsai
+    rsclock
+    pipes-rs
+    cmatrix
+    hollywood
+    sssnake
+    vitetris
+
+    figlet
+
+    lf
+    yazi
+
+    #
+    speedtest-rs
+    gping
+    fail2ban
+    psi-notify
+
     killall
     libnotify
     timer
     brightnessctl
-    gnugrep
-    bat eza fd bottom ripgrep
+    gnugrep ripgrep
+    gnused sd
     rsync
     unzip
-    tmux
+    zip
     w3m
     pandoc
     hwinfo
     pciutils
-    (pkgs.callPackage ../pkgs/smartcalc.nix { })
-    (pkgs.writeShellScriptBin "sc" ''smartcalc'')
-    (pkgs.callPackage ../pkgs/pokemon-colorscripts.nix { })
-    #(pkgs.callPackage ../pkgs/ytsub.nix { })
-    #(pkgs.callPackage ../pkgs/russ.nix { })
-    #(pkgs.python3Packages.callPackage ../pkgs/impressive.nix { })
+    numbat
     (pkgs.writeShellScriptBin "airplane-mode" ''
       #!/bin/sh
       connectivity="$(nmcli n connectivity)"
@@ -38,10 +60,5 @@
       fi
     '')
     vim neovim
-  ];
-
-  imports = [
-    ../bin/phoenix.nix # My nix command wrapper
-    ../bin/ytsub-wrappers.nix #My ytsub wrapper
   ];
 }

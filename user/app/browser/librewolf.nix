@@ -14,9 +14,12 @@
     defaultPref("font.name.serif.x-western","''+userSettings.font+''");
 
     defaultPref("font.size.variable.x-western",20);
+    defaultPref("browser.toolbars.bookmarks.visibility","always");
     defaultPref("privacy.resisttFingerprinting.letterboxing", true);
     defaultPref("network.http.referer.XOriginPolicy",2);
+    defaultPref("privacy.clearOnShutdown.history",true);
     defaultPref("privacy.clearOnShutdown.downloads",true);
+    defaultPref("privacy.clearOnShutdown.cookies",true);
     defaultPref("gfx.webrender.software.opengl",false);
     defaultPref("webgl.disabled",true);
     pref("font.name.serif.x-western","''+userSettings.font+''");

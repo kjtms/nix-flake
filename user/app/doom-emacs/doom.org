@@ -16,7 +16,7 @@
   - [[#dired-configuration][Dired Configuration]]
   - [[#ranger-configuration][Ranger Configuration]]
   - [[#hledger-mode-configuration][hledger-mode Configuration]]
-  - [[#tab-bar-configuration][Tab Bar Configuration]]
+  - [[#no-tab-bar-configuration][NO Tab Bar Configuration]]
   - [[#focus-mode-configuration][Focus Mode Configuration]]
   - [[#helpful-mode-configuration][Helpful Mode Configuration]]
   - [[#mu4e-configuration][mu4e Configuration]]
@@ -105,17 +105,14 @@ Doom Emacs is traditionally installed by cloning the repository ([[https://githu
   ))
   ;; On Linux I can enable blur, however
   (funcall (lambda ()
-    (set-frame-parameter nil 'alpha-background 75)
-    (add-to-list 'default-frame-alist '(alpha-background . 75))
+    (set-frame-parameter nil 'alpha-background 85)
+    (add-to-list 'default-frame-alist '(alpha-background . 85))
   ))
 )
 
 ;; Icons in completion buffers
 (add-hook 'marginalia-mode-hook #'all-the-icons-completion-marginalia-setup)
 (all-the-icons-completion-mode)
-
-;; This makes non-main buffers dimmer, so you can focus on main buffers
-(solaire-global-mode +1)
 
 ;; Grammar tasing should be voluntary
 (setq writegood-mode nil)
@@ -181,11 +178,13 @@ Doom Emacs is traditionally installed by cloning the repository ([[https://githu
     ;; line 2
     ( (,"Git" "" "" (lambda (&rest _)) 'diredfl-exec-priv)
      (,(all-the-icons-octicon "mark-github" :height 1.0 :v-adjust 0.0)
-       "GitHub" "" (lambda (&rest _) (browse-url "ext+container:name=Tech&url=https://github.com/librephoenix")) 'diredfl-exec-priv)
+       "GitHub" "" (lambda (&rest _) (browse-url "https://github.com/librephoenix")) 'diredfl-exec-priv)
      (,(all-the-icons-faicon "gitlab" :height 1.0 :v-adjust 0.0)
-       "GitLab" "" (lambda (&rest _) (browse-url "ext+container:name=Tech&url=https://gitlab.com/librephoenix")) 'diredfl-exec-priv)
+       "GitLab" "" (lambda (&rest _) (browse-url "https://gitlab.com/librephoenix")) 'diredfl-exec-priv)
      (,(all-the-icons-faicon "coffee" :height 1.0 :v-adjust 0.0)
        "Gitea" "" (lambda (&rest _) (browse-url my-gitea-domain)) 'diredfl-exec-priv)
+     (,(all-the-icons-octicon "triangle-up" :height 1.2 :v-adjust -0.1)
+       "Codeberg" "" (lambda (&rest _) (browse-url "https://codeberg.org/librephoenix")) 'diredfl-exec-priv)
     )
     ;; line 3
     ( (,"Agenda" "" "" (lambda (&rest _)) 'dired-warning)
@@ -253,6 +252,23 @@ Doom Emacs is traditionally installed by cloning the repository ([[https://githu
 ;; For camelCase
 (global-subword-mode 1)
 
+;; Mini-frames ;; cool but kinda suboptimal atm
+;(add-load-path! "~/.emacs.d/mini-frame")
+;(require 'mini-frame)
+;(setq mini-frame-ignore-commands '(evil-ex-search-forward helpful-variable helpful-callable))
+;(setq mini-frame-show-parameters
+;    '((left . 216)
+;     (top . 240)
+;     (width . 0.78)
+;     (height . 20)
+;     (alpha-background . 90))
+;)
+;(setq mini-frame-detach-on-hide nil)
+;(setq mini-frame-resize t)
+;(setq resize-mini-frames t)
+;(setq mini-frame-standalone nil)
+;(mini-frame-mode 1)
+
 #+END_SRC
 ** Registers
 #+BEGIN_SRC emacs-lisp :tangle config.el
@@ -295,7 +311,9 @@ Doom Emacs is traditionally installed by cloning the repository ([[https://githu
   '(org-level-5 :inherit outline-5 :height 1.1)
   '(org-level-6 :inherit outline-6 :height 1.05)
   '(org-level-7 :inherit outline-7 :height 1.05)
+  '(variable-pitch :family "Intel One Mono")
   )
+
 
 (after! org (org-eldoc-load))
 
@@ -325,7 +343,7 @@ Doom Emacs is traditionally installed by cloning the repository ([[https://githu
   org-pretty-entities t
   org-ellipsis "…")
 
-(setq-default line-spacing 0.15)
+(setq-default line-spacing 0)
 
 ; Automatic table of contents is nice
 (if (require 'toc-org nil t)
@@ -485,10 +503,52 @@ same directory as the org-buffer and insert a link to this file."
                     '(file))
            (list (openwith-make-extension-regexp
                   '("flp"))
-                    "~/.local/bin/flstudio"
+                    "flstudio"
+                    '(file))
+           (list (openwith-make-extension-regexp
+                  '("mid"))
+                    "rosegarden"
                     '(file))
                ))
      (openwith-mode 1)))
+
+(add-load-path! "~/.emacs.d/org-krita")
+(require 'org-krita)
+(add-hook 'org-mode-hook 'org-krita-mode)
+(setq org-krita-extract-filename "preview.png")
+(setq org-krita-scale 1)
+
+(add-load-path! "~/.emacs.d/org-xournalpp")
+(require 'org-xournalpp)
+(add-hook 'org-mode-hook 'org-xournalpp-mode)
+(setq org-xournalpp-template-getter
+  '(closure
+    (t)
+    nil
+    (file-truename "~/Templates/template.xopp") ; use my own template
+  )
+)
+
+;; override width to static 250 for now
+;; so I don't have massive images in org mode (scrolling not fun)
+(defun org-xournalpp--create-image (link refresh)
+  "Extract svg/png from given LINK and return image.
+
+Regenerate the cached inline image, if REFRESH is true.
+
+If the path from LINK does not exist, nil is returned."
+  (let ((width 250)
+        (xopp-path (f-expand (org-element-property :path link))))
+    (when (f-exists? xopp-path)
+        (if width
+            (create-image (org-xournalpp--get-image xopp-path refresh)
+                          org-xournalpp-image-type
+                          nil
+                          :width width)
+          (create-image (org-xournalpp--get-image xopp-path refresh)
+                        org-xournalpp-image-type
+                        nil)))))
+
 
 #+END_SRC
 *** Copy Links/Files into Clipboard
@@ -542,6 +602,15 @@ else
 fi
 exit
 #+END_SRC
+*** NO Org Sliced Images
+#+begin_src emacs-lisp
+;; this is kinda buggy
+(add-load-path! "~/.emacs.d/org-sliced-images")
+(require 'org-sliced-images)
+(defalias 'org-remove-inline-images #'org-sliced-images-remove-inline-images)
+(defalias 'org-toggle-inline-images #'org-sliced-images-toggle-inline-images)
+(defalias 'org-display-inline-images #'org-sliced-images-display-inline-images)
+#+end_src
 *** Org Online Images
 #+BEGIN_SRC emacs-lisp :tangle config.el
 ;; Online images inside of org mode is pretty cool
@@ -644,6 +713,8 @@ exit
    :desc "Org Transclusion Mode" "t" #'org-transclusion-mode))
 (map! :leader :prefix "n" "l" #'org-transclusion-live-sync-start)
 
+(setq org-transclusion-exclude-elements '(property-drawer keyword))
+
 (add-hook 'org-mode-hook #'org-transclusion-mode)
 
 #+END_SRC
@@ -686,6 +757,42 @@ exit
       "e" #'org-jekyll-rename-post
 )
 
+#+end_src
+*** Crdt
+#+begin_src emacs-lisp :tangle config.el
+(require 'crdt)
+(setq crdt-default-tls nil)
+(setq crdt-default-name "Emmet")
+(if (file-exists-p "~/.emacs.d/crdt-private.el") (load! "~/.emacs.d/crdt-private.el"))
+(defun crdt-connect-default ()
+  (interactive)
+  (crdt-connect crdt-default-server-address crdt-default-name)
+)
+(map! :leader
+      :desc "crdt"
+      :prefix ("C")
+
+      :desc "Connect to a crdt server"
+      "c" #'crdt-connect-default
+
+      :desc "Connect to default crdt server"
+      "C" #'crdt-connect-default
+
+      :desc "Disconnect from a crdt server"
+      "d" #'crdt-disconnect
+
+      :desc "Add buffer to a session"
+      "a" #'crdt-share-buffer
+
+      :desc "Stop sharing buffer to session"
+      "s" #'crdt-stop-share-buffer
+
+      :desc "List crdt buffers in a session"
+      "l" #'crdt-list-buffers
+
+      :desc "List crdt users in a session"
+      "u" #'crdt-list-users
+)
 #+end_src
 ** Org Roam Configuration
 *** Standard Org Roam Configuration
@@ -910,13 +1017,20 @@ exit
   (setq org-agenda-files (append org-agenda-files (org-roam-list-notes-by-tag "todos")))
 )
 
+(defun org-roam-append-ids-to-org-id-files (db)
+  (org-roam-switch-db db t)
+  (setq org-id-files (append org-id-files (org-roam-list-files)))
+)
+
 ;; Refreshing org roam agenda
 (defun org-roam-refresh-agenda-list ()
   (interactive)
   (setq prev-org-roam-db-choice org-roam-db-choice)
   (setq org-agenda-files '())
+  (setq org-id-files '())
   (dolist (DB full-org-roam-db-list-pretty)
     (org-roam-append-notes-to-agenda "todos" DB)
+    (org-roam-append-ids-to-org-id-files DB)
   )
   (setq org-agenda-files (-uniq org-agenda-files))
   (org-roam-switch-db prev-org-roam-db-choice 1)
@@ -1076,6 +1190,7 @@ On Wayland, EAF doesn't work.
       org-agenda-skip-scheduled-if-deadline-is-shown t
       org-agenda-skip-timestamp-if-deadline-is-shown t)
 
+
 ;; Custom styles for dates in agenda
 (custom-set-faces!
   '(org-agenda-date :inherit outline-1 :height 1.15)
@@ -1083,6 +1198,8 @@ On Wayland, EAF doesn't work.
   '(org-agenda-date-weekend :ineherit outline-2 :height  1.15)
   '(org-agenda-date-weekend-today :inherit outline-4 :height 1.15)
   '(org-super-agenda-header :inherit custom-button :weight bold :height 1.05)
+  `(link :foreground unspecified :underline nil :background ,(nth 1 (nth 7 doom-themes--colors)))
+  '(org-link :foreground unspecified)
   )
 
 ;; Toggle completed entries function
@@ -1123,8 +1240,12 @@ On Wayland, EAF doesn't work.
 ))
 
 #+END_SRC
+
 *** Org Agenda Convenience Functions
 #+BEGIN_SRC emacs-lisp :tangle config.el
+(defalias 'org-timestamp-down 'org-timestamp-down-day)
+(defalias 'org-timestamp-up 'org-timestamp-up-day)
+
 (defun org-categorize-by-roam-db-on-save ()
   (interactive)
   (when (string= (message "%s" major-mode) "org-mode")
@@ -1276,7 +1397,7 @@ On Wayland, EAF doesn't work.
 
 #+END_SRC
 
-*** Org Agenda Notifications
+*** NO Org Agenda Notifications
 #+BEGIN_SRC emacs-lisp
 (add-load-path! "~/.emacs.d/org-yaap")
 (require 'org-yaap)
@@ -1287,8 +1408,17 @@ On Wayland, EAF doesn't work.
 (setq org-yaap-daemon-idle-time 30)
 (org-yaap-mode 1)
 #+END_SRC
-*** Org Timeblock
+*** Calfw
 #+begin_src emacs-lisp :tangle config.el
+(require 'calfw)
+(require 'calfw-org)
+(setq cfw:org-agenda-schedule-args '(:timestamp))
+
+(map! :leader :desc "Open org calendar"
+      "O c" 'cfw:open-org-calendar)
+#+end_src
+*** NO Org Timeblock
+#+begin_src emacs-lisp
 (add-load-path! "~/.emacs.d/org-timeblock")
 (require 'org-timeblock)
 
@@ -1328,18 +1458,16 @@ https://github.com/magit/magit/issues/460 (@cpitclaudel)."
             :filter-return #'~/magit-process-environment)
 
 (require 'magit-todos)
+(setq magit-todos-keywords-list '("TODO" "FIXME" "HACK" "REVIEW" "DEPRECATED" "BUG"))
 (magit-todos-mode 1)
 
 #+END_SRC
 ** Ibuffer Configuration
 #+BEGIN_SRC emacs-lisp :tangle config.el
-(evil-set-initial-state 'ibuffer-mode 'motion)
-(evil-define-key 'motion 'ibuffer-mode
-  "j" 'evil-next-visual-line
-  "k" 'evil-previous-visual-line
-  "d" 'ibuffer-mark-for-delete
-  "q" 'kill-buffer
-  (kbd "<return>") 'ibuffer-visit-buffer)
+(require 'all-the-icons-ibuffer)
+(add-hook 'ibuffer-mode-hook #'all-the-icons-ibuffer-mode)
+(setq all-the-icons-ibuffer-color-icon t)
+(evil-set-initial-state 'ibuffer-mode 'normal)
 
 #+END_SRC
 ** Dired Configuration
@@ -1347,12 +1475,18 @@ https://github.com/magit/magit/issues/460 (@cpitclaudel)."
 ;;;------ dired configuration ------;;;
 
 (add-hook 'dired-mode-hook 'all-the-icons-dired-mode)
+(setq all-the-icons-dired-monochrome nil)
 
 (map! :desc "Increase font size"
       "C-=" 'text-scale-increase
 
       :desc "Decrease font size"
-      "C--" 'text-scale-decrease)
+      "C--" 'text-scale-decrease
+
+      :desc "Jump to dired"
+      "M-f" 'dired-jump
+)
+
 
 #+END_SRC
 ** Ranger Configuration
@@ -1365,9 +1499,7 @@ https://github.com/magit/magit/issues/460 (@cpitclaudel)."
 
       :desc "Toggle mark on current file"
       "x" 'ranger-toggle-mark
-
-      :desc "Open ranger"
-      "o d" 'ranger)
+)
 
 #+END_SRC
 ** hledger-mode Configuration
@@ -1412,7 +1544,7 @@ https://github.com/magit/magit/issues/460 (@cpitclaudel)."
       "t a" 'hledger-edit-amount)
 
 #+END_SRC
-** Tab Bar Configuration
+** NO Tab Bar Configuration
 I don't have this active right now since it's kinda weird with pgtk...
 #+BEGIN_SRC emacs-lisp
 ;;;-- tab-bar-mode configuration ;;;--
@@ -1469,12 +1601,13 @@ I don't have this active right now since it's kinda weird with pgtk...
 ** mu4e Configuration
 #+BEGIN_SRC emacs-lisp :tangle config.el
 ;;;------ helpful configuration ------;;;
-(add-load-path! "~/.nix-profile/share/emacs/site-lisp/elpa/mu4e-1.12.1")
+(add-load-path! "~/.nix-profile/share/emacs/site-lisp/elpa/mu4e-1.12.2")
 (require 'mu4e)
 (require 'mu4e-contrib)
 (require 'mu4e-actions)
 
 (after! mu4e
+  (setq mu4e-modeline-support nil)
   (setq mu4e-sent-folder (lambda (msg) (concat "/" (nth 1 (split-string (mu4e-message-field msg :maildir) "/" )) "/Sent")))
   (setq mu4e-drafts-folder (lambda (msg) (concat "/" user-mail-address "/Drafts")))
   (setq mu4e-trash-folder (lambda (msg) (concat "/" (nth 1 (split-string (mu4e-message-field msg :maildir) "/" )) "/Trash")))
@@ -1482,6 +1615,8 @@ I don't have this active right now since it's kinda weird with pgtk...
 
   (setq mu4e-index-lazy-check t)
   (setq mu4e-index-cleanup t)
+  (setq mu4e-update-interval 120)
+  (mu4e-alert-enable-notifications)
 
   (define-key mu4e-main-mode-map (kbd "<SPC>") #'doom/leader)
   (define-key mu4e-headers-mode-map (kbd "<SPC>") #'doom/leader)
@@ -1567,6 +1702,8 @@ I don't have this active right now since it's kinda weird with pgtk...
   (add-hook 'mu4e-compose-mode-hook #'no-auto-fill)
   (add-hook 'mu4e-compose-pre-hook #'no-org-msg-mode)
 
+  (mu4e--start) ;; start mu4e silently
+
 )
 
 #+END_SRC
@@ -1594,6 +1731,7 @@ I don't have this active right now since it's kinda weird with pgtk...
 (map! :leader
       :desc "Projectile grep"
       "/" #'projectile-grep)
+(after! projectile (put 'projectile-grep 'disabled nil))
 
 #+END_SRC
 ** sudo-edit
@@ -1645,6 +1783,8 @@ I don't have this active right now since it's kinda weird with pgtk...
 #+END_SRC
 ** Terminal
 #+BEGIN_SRC emacs-lisp :tangle config.el
+(add-to-list 'tramp-remote-path 'tramp-own-remote-path)
+(add-to-list 'vterm-tramp-shells '("ssh" "zsh")) ;; I use zsh on all my servers
 #+END_SRC
 ** Elfeed
 #+BEGIN_SRC emacs-lisp :tangle config.el
@@ -1867,7 +2007,7 @@ This section is the [[./init.el][init.el]] section, which controls which Doom mo
        ;;(wanderlust +gmail)
 
        :app
-       ;;calendar
+       calendar
        ;;emms
        ;;everywhere        ; *leave* Emacs!? You must be joking
        ;;irc               ; how neckbeards socialize
@@ -1901,6 +2041,7 @@ Any git package can be configured for a particular commit or branch:
 (package! embark :pin "0908eea")
 (package! dashboard)
 (package! direnv)
+(package! org :pin "5bdfc02c6fa1b9ad4f075ac1ad1e4086ead310db")
 (package! org-modern)
 (package! org-super-agenda)
 (package! emacsql :pin "c1a4407")
@@ -1910,6 +2051,7 @@ Any git package can be configured for a particular commit or branch:
 (package! org-yt)
 (package! toc-org)
 (package! lister)
+(package! all-the-icons-ibuffer)
 (package! all-the-icons-dired)
 (package! all-the-icons-completion)
 (package! ox-reveal)
@@ -1930,20 +2072,27 @@ Any git package can be configured for a particular commit or branch:
 (package! org-ql)
 (package! persist)
 (package! sudo-edit)
+(package! solaire-mode :disable t)
 #+END_SRC
 * Nix Integration
 In order to have Nix load my Doom Emacs configuration [[./doom.nix][doom.nix]], which I source in the =imports= block of my [[../../../profiles/work/home.nix][home.nix]].
 #+BEGIN_SRC nix :tangle doom.nix
-{ config, lib, pkgs, pkgs-stable, userSettings, systemSettings,
-  org-nursery, org-yaap, org-side-tree, org-timeblock, phscroll, ... }:
+{ config, lib, pkgs-emacs, pkgs-stable, inputs, userSettings, systemSettings, ... }:
 let
   themePolarity = lib.removeSuffix "\n" (builtins.readFile (./. + "../../../../themes"+("/"+userSettings.theme)+"/polarity.txt"));
   dashboardLogo = ./. + "/nix-" + themePolarity + ".png";
 in
 {
+  imports = [
+    inputs.nix-doom-emacs.hmModule
+    ../git/git.nix
+    ../../shell/sh.nix
+    ../../shell/cli-collection.nix
+  ];
+
   programs.doom-emacs = {
     enable = true;
-    emacsPackage = pkgs.emacs29-pgtk;
+    emacsPackage = pkgs-emacs.emacs29-pgtk;
     doomPrivateDir = ./.;
     # This block from https://github.com/znewman01/dotfiles/blob/be9f3a24c517a4ff345f213bf1cf7633713c9278/emacs/default.nix#L12-L34
     # Only init/packages so we only rebuild when those change.
@@ -1954,7 +2103,7 @@ in
         filter = path: type:
           builtins.elem (baseNameOf path) [ "init.el" "packages.el" ];
       };
-      in pkgs.linkFarm "doom-packages-dir" [
+      in pkgs-emacs.linkFarm "doom-packages-dir" [
         {
           name = "init.el";
           path = "${filteredPath}/init.el";
@@ -1965,7 +2114,7 @@ in
         }
         {
           name = "config.el";
-          path = pkgs.emptyFile;
+          path = pkgs-emacs.emptyFile;
         }
       ];
   # End block
@@ -1976,18 +2125,16 @@ in
       extension = ".el";
   };
 
-  home.packages = (with pkgs; [
+  home.packages = (with pkgs-emacs; [
     nil
     nixfmt
-    git
     file
     wmctrl
     jshon
     aria
     hledger
     hunspell hunspellDicts.en_US-large
-    pandoc
-    (pkgs.mu.override { emacs = emacs29-pgtk; })
+    (pkgs-emacs.mu.override { emacs = emacs29-pgtk; })
     emacsPackages.mu4e
     isync
     msmtp
@@ -2006,27 +2153,39 @@ in
 
   services.mbsync = {
     enable = true;
-    package = pkgs.isync;
+    package = pkgs-stable.isync;
     frequency = "*:0/5";
   };
 
   home.file.".emacs.d/org-yaap" = {
-    source = "${org-yaap}";
+    source = "${inputs.org-yaap}";
     recursive = true;
   };
 
   home.file.".emacs.d/org-side-tree" = {
-    source = "${org-side-tree}";
+    source = "${inputs.org-side-tree}";
     recursive = true;
   };
 
   home.file.".emacs.d/org-timeblock" = {
-    source = "${org-timeblock}";
+    source = "${inputs.org-timeblock}";
     recursive = true;
   };
 
   home.file.".emacs.d/org-nursery" = {
-    source = "${org-nursery}";
+    source = "${inputs.org-nursery}";
+  };
+
+  home.file.".emacs.d/org-krita" = {
+    source = "${inputs.org-krita}";
+  };
+
+  home.file.".emacs.d/org-xournalpp" = {
+    source = "${inputs.org-xournalpp}";
+  };
+
+  home.file.".emacs.d/org-sliced-images" = {
+    source = "${inputs.org-sliced-images}";
   };
 
   home.file.".emacs.d/dashboard-logo.png".source = dashboardLogo;
@@ -2036,7 +2195,11 @@ in
   };
 
   home.file.".emacs.d/phscroll" = {
-    source = "${phscroll}";
+    source = "${inputs.phscroll}";
+  };
+
+  home.file.".emacs.d/mini-frame" = {
+    source = "${inputs.mini-frame}";
   };
 
   home.file.".emacs.d/system-vars.el".text = ''

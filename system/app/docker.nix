@@ -18,4 +18,9 @@ assert lib.asserts.assertOneOf "storageDriver" storageDriver [
     autoPrune.enable = true;
   };
   users.users.${userSettings.username}.extraGroups = [ "docker" ];
+ #environment.systemPackages = with pkgs; [
+ #  docker
+ #  docker-compose
+ #  lazydocker
+ #];
 }

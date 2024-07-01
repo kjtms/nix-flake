@@ -1,4 +1,4 @@
-{ config, pkgs, lib, ... }:
+{ config, pkgs, ... }:
 
 {
   imports = [ ./pipewire.nix
@@ -23,18 +23,17 @@
   # Configure xwayland
   services.xserver = {
     enable = true;
-    videoDrivers = [ "amdgpu" ];
     xkb = {
       layout = "us";
       variant = "";
-     #options = "caps:escape";
+      options = "caps:escape";
     };
     displayManager.sddm = {
       enable = true;
       wayland.enable = true;
       enableHidpi = true;
       theme = "chili";
+     #package = pkgs.sddm;
     };
   };
-
 }

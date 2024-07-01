@@ -1,4 +1,4 @@
-{ config, lib, pkgs, pkgs-kdenlive, nix-doom-emacs, stylix, userSettings, ... }:
+{ config, lib, pkgs, pkgs-kdenlive, userSettings, ... }:
 
 {
   # Home Manager needs a bit of information about you and the paths it should
@@ -9,13 +9,10 @@
   programs.home-manager.enable = true;
 
   imports = [
-              (if ((userSettings.editor == "emacs") || (userSettings.editor == "emacsclient")) then nix-doom-emacs.hmModule else null)
-              stylix.homeManagerModules.stylix
               (./. + "../../../user/wm"+("/"+userSettings.wm+"/"+userSettings.wm)+".nix") # My window manager selected from flake
               ../../user/shell/sh.nix # My zsh and bash config
               ../../user/shell/cli-collection.nix # Useful CLI apps
-              ../../user/bin/phoenix.nix # My nix command wrapper
-              ../../user/app/music/music.nix
+              ../../user/shell/yazi.nix
               ../../user/app/doom-emacs/doom.nix # My doom emacs config
               ../../user/app/ranger/ranger.nix # My ranger file manager config
               ../../user/app/git/git.nix # My git config
@@ -24,8 +21,8 @@
               ../../user/app/virtualization/virtualization.nix # Virtual machines
              #../../user/app/flatpak/flatpak.nix # Flatpaks
               ../../user/style/stylix.nix # Styling and themes for my apps
-              ../../user/lang/python/python.nix
-              ../../user/lang/python/python-packages.nix
+             #../../user/lang/python/python.nix
+             #../../user/lang/python/python-packages.nix
              #../../user/lang/cc/cc.nix # C and C++ tools
              #../../user/lang/godot/godot.nix # Game development
              #../../user/pkgs/blockbench.nix # Blockbench ## marked as insecure
@@ -39,7 +36,7 @@
     zsh
     alacritty
     librewolf
-    qutebrowser
+    brave
     dmenu
     rofi
     git
@@ -61,8 +58,12 @@
     texliveSmall
     thunderbird
     #logseq
+    numbat
+    element-desktop-wayland
 
-    deluge
+    qbittorrent-qt5
+    libsForQt5.kio
+    jackett
     armcord
     nicotine-plus
 
@@ -89,10 +90,31 @@
       exec = "flstudio %U";
       terminal = false;
       type = "Application";
+      icon = "flstudio";
       mimeTypes = ["application/octet-stream"];
+    })
+    (stdenv.mkDerivation {
+      name = "flstudio-icon";
+      # icon from https://www.reddit.com/r/MacOS/comments/jtmp7z/i_made_icons_for_discord_spotify_and_fl_studio_in/
+      src = [ ../../user/pkgs/flstudio.png ];
+
+      unpackPhase = ''
+        for srcFile in $src; do
+          # Copy file into build dir
+          cp $srcFile ./
+        done
+      '';
+
+      installPhase = ''
+        mkdir -p $out $out/share $out/share/pixmaps
+        ls $src
+        ls
+        cp $src $out/share/pixmaps/flstudio.png
+      '';
     })
 
     # Media
+    switcheroo
     gimp
     pinta
     krita
@@ -104,7 +126,24 @@
     strawberry
     #freetube
     blender
-    cura
+    (pkgs.cura.overrideAttrs (oldAttrs: {
+      postInstall = oldAttrs.postInstall + ''cp -rf ${(pkgs.makeDesktopItem {
+          name = "com.ultimaker.cura";
+          icon = "cura-icon";
+          desktopName = "Cura";
+          exec = "env QT_QPA_PLATFORM=xcb ${pkgs.cura}/bin/cura %F";
+          tryExec = "env QT_QPA_PLATFORM=xcb ${pkgs.cura}/bin/cura";
+          terminal = false;
+          type = "Application";
+          categories = ["Graphics"];
+          mimeTypes = ["model/stl" "application/vnd.ms-3mfdocument" "application/prs.wavefront-obj"
+                       "image/bmp" "image/gif" "image/jpeg" "image/png" "text/x-gcode" "application/x-amf"
+                       "application/x-ply" "application/x-ctm" "model/vnd.collada+xml" "model/gltf-binary"
+                       "model/gltf+json" "model/vnd.collada+xml+zip"];
+          })}/share/applications $out/share'';
+    }))
+    (pkgs.writeShellScriptBin "curax" ''env QT_QPA_PLATFORM=xcb ${pkgs.cura}/bin/cura'')
+    openscad
     curaengine_stable
     (stdenv.mkDerivation {
       name = "cura-slicer";
@@ -139,15 +178,26 @@
     libmediainfo
     mediainfo-gui
     audio-recorder
+    gnome.cheese
+    ardour
+    rosegarden
+    tenacity
 
 
     # Various dev packages
     dropbox
     texinfo
-    nix-prefetch-git
     libffi zlib
     nodePackages.ungit
+    ventoy
+    manix
   ]) ++ ([ pkgs-kdenlive.kdenlive ]);
+
+  home.file.".local/share/pixmaps/nixos-snowflake-stylix.svg".source =
+    config.lib.stylix.colors {
+      template = builtins.readFile ../../user/pkgs/nixos-snowflake-stylix.svg.mustache;
+      extension = "svg";
+    };
 
   nixpkgs.config.permittedInsecurePackages = [
     "electron-22.3.27"
@@ -172,12 +222,11 @@
     publicShare = null;
     extraConfig = {
       XDG_DOTFILES_DIR = "${config.home.homeDirectory}/.dotfiles";
-     #XDG_ARCHIVE_DIR = "${config.home.homeDirectory}/Archive";
+      XDG_ARCHIVE_DIR = "${config.home.homeDirectory}/Archive";
       XDG_VM_DIR = "${config.home.homeDirectory}/Machines";
       XDG_ORG_DIR = "${config.home.homeDirectory}/Org";
       XDG_PODCAST_DIR = "${config.home.homeDirectory}/Media/Podcasts";
       XDG_BOOK_DIR = "${config.home.homeDirectory}/Media/Books";
-      XDG_MOVIES_DIR = "${config.home.homeDirectory}/Media/Movies";
       XDG_GAMES_DIR = "${config.home.homeDirectory}/Media/Games";
       XDG_GAMESAVES_DIR = "${config.home.homeDirectory}/Media/Game Saves";
     };
@@ -193,6 +242,12 @@
     SPAWNEDITOR = userSettings.spawnEditor;
     TERM = userSettings.term;
     BROWSER = userSettings.browser;
+  };
+  news.display = "silent";
+
+  gtk.iconTheme = {
+    package = pkgs.papirus-icon-theme;
+    name = if (config.stylix.polarity == "dark") then "Papirus-Dark" else "Papirus-Light";
   };
 
 }

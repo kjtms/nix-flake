@@ -1,13 +1,19 @@
-{ config, lib, pkgs, pkgs-stable, userSettings, systemSettings,
-  org-nursery, org-yaap, org-side-tree, org-timeblock, phscroll, ... }:
+{ config, lib, pkgs-emacs, pkgs-stable, inputs, userSettings, systemSettings, ... }:
 let
   themePolarity = lib.removeSuffix "\n" (builtins.readFile (./. + "../../../../themes"+("/"+userSettings.theme)+"/polarity.txt"));
   dashboardLogo = ./. + "/nix-" + themePolarity + ".png";
 in
 {
+  imports = [
+    inputs.nix-doom-emacs.hmModule
+    ../git/git.nix
+    ../../shell/sh.nix
+    ../../shell/cli-collection.nix
+  ];
+
   programs.doom-emacs = {
     enable = true;
-    emacsPackage = if ( userSettings.wmType == "x11") then pkgs.emacs29-gtk3 else pkgs.emacs29-pgtk;
+    emacsPackage = pkgs-emacs.emacs29-pgtk;
     doomPrivateDir = ./.;
     # This block from https://github.com/znewman01/dotfiles/blob/be9f3a24c517a4ff345f213bf1cf7633713c9278/emacs/default.nix#L12-L34
     # Only init/packages so we only rebuild when those change.
@@ -18,7 +24,7 @@ in
         filter = path: type:
           builtins.elem (baseNameOf path) [ "init.el" "packages.el" ];
       };
-      in pkgs.linkFarm "doom-packages-dir" [
+      in pkgs-emacs.linkFarm "doom-packages-dir" [
         {
           name = "init.el";
           path = "${filteredPath}/init.el";
@@ -29,7 +35,7 @@ in
         }
         {
           name = "config.el";
-          path = pkgs.emptyFile;
+          path = pkgs-emacs.emptyFile;
         }
       ];
   # End block
@@ -40,18 +46,16 @@ in
       extension = ".el";
   };
 
-  home.packages = (with pkgs; [
+  home.packages = (with pkgs-emacs; [
     nil
     nixfmt
-    git
     file
     wmctrl
     jshon
     aria
     hledger
     hunspell hunspellDicts.en_US-large
-    pandoc
-    (pkgs.mu.override { emacs = emacs29-pgtk; })
+    (pkgs-emacs.mu.override { emacs = emacs29-pgtk; })
     emacsPackages.mu4e
     isync
     msmtp
@@ -70,27 +74,39 @@ in
 
   services.mbsync = {
     enable = true;
-    package = pkgs.isync;
+    package = pkgs-stable.isync;
     frequency = "*:0/5";
   };
 
   home.file.".emacs.d/org-yaap" = {
-    source = "${org-yaap}";
+    source = "${inputs.org-yaap}";
     recursive = true;
   };
 
   home.file.".emacs.d/org-side-tree" = {
-    source = "${org-side-tree}";
+    source = "${inputs.org-side-tree}";
     recursive = true;
   };
 
   home.file.".emacs.d/org-timeblock" = {
-    source = "${org-timeblock}";
+    source = "${inputs.org-timeblock}";
     recursive = true;
   };
 
   home.file.".emacs.d/org-nursery" = {
-    source = "${org-nursery}";
+    source = "${inputs.org-nursery}";
+  };
+
+  home.file.".emacs.d/org-krita" = {
+    source = "${inputs.org-krita}";
+  };
+
+  home.file.".emacs.d/org-xournalpp" = {
+    source = "${inputs.org-xournalpp}";
+  };
+
+  home.file.".emacs.d/org-sliced-images" = {
+    source = "${inputs.org-sliced-images}";
   };
 
   home.file.".emacs.d/dashboard-logo.png".source = dashboardLogo;
@@ -100,7 +116,11 @@ in
   };
 
   home.file.".emacs.d/phscroll" = {
-    source = "${phscroll}";
+    source = "${inputs.phscroll}";
+  };
+
+  home.file.".emacs.d/mini-frame" = {
+    source = "${inputs.mini-frame}";
   };
 
   home.file.".emacs.d/system-vars.el".text = ''

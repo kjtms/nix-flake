@@ -1,6 +1,9 @@
-{ config, lib, pkgs, userSettings, ... }:
-
-{
+{ inputs, config, lib, pkgs, userSettings, systemSettings
+, pkgs-nwg-dock-hyprland, ... }:
+let
+  pkgs-hyprland =
+    inputs.hyprland.inputs.nixpkgs.legacyPackages.${pkgs.stdenv.hostPlatform.system};
+in {
   imports = [
     ../../app/terminal/alacritty.nix
     ../../app/terminal/kitty.nix
@@ -8,24 +11,36 @@
       dmenu_command = "fuzzel -d";
       inherit config lib pkgs;
     })
-    ./lib/waybar.nix
+   ./lib/waybar.nix
+   ./lib/fnott.nix
+   ./lib/fuzzel.nix
+   ./lib/nwg.nix
   ];
 
   gtk.cursorTheme = {
     package = pkgs.bibata-cursors;
-    name = if (config.stylix.polarity == "light") then "Bibata-Modern-Classic" else "Bibata-Modern-Ice";
+    name = if (config.stylix.polarity == "light") then
+      "Bibata-Modern-Classic"
+    else
+      "Bibata-Modern-Ice";
     size = 24;
   };
 
   wayland.windowManager.hyprland = {
     enable = true;
-    plugins = [ ];
+    package = inputs.hyprland.packages.${pkgs.system}.hyprland;
+    plugins = [
+      inputs.hyprland-plugins.packages.${pkgs.system}.hyprexpo
+      inputs.hyprland-plugins.packages.${pkgs.system}.hyprtrails
+      inputs.hycov.packages.${pkgs.system}.hycov
+    ];
     xwayland.enable = true;
     systemd.enable = true;
     settings = {
       exec-once = [
         "dbus-update-activation-environment DISPLAY XAUTHORITY WAYLAND_DISPLAY:"
-        ("hyprctl setcursor" + config.gtk.cursorTheme.name + builtins.toString config.gtk.cursorTheme.size )
+        ("hyprctl setcursor" + config.gtk.cursorTheme.name
+          + builtins.toString config.gtk.cursorTheme.size)
         "pypr"
         "nm-applet"
         "STEAM_FRAME_FORCE_CLOSE=1 SDL_VIDEODRIVER=x11 steam -silent"
@@ -37,29 +52,35 @@
         "emacs --daemon"
         "swayidle -w timeout 120 'swaylock -f'"
         "ydotoold"
+
+        "hyprprofile Default"
+        "hypr-element-start"
+        "hypridle"
+        "hyprpaper"
+        "sleep 5 && libinput-gestures"
       ];
 
-      exec = [
-       "~/.swaybg-stylix"
-      ];
+      exec = [ "~/.swaybg-stylix" ];
 
-  monitor = [
-    "HDMI-A-2, 2560x1440@144, 0x0, 1"
-    ];
+      monitor = [ "HDMI-A-2, 2560x1440@144, 0x0, 1" ];
 
       general = {
         layout = "dwindle";
         resize_on_border = true;
-        cursor_inactive_timeout = 30;
         border_size = 3;
-        no_cursor_warps = false;
-        "col.active_border" = "0xff" + config.lib.stylix.colors.base08;
-        "col.inactive_border" = "0x33" + config.lib.stylix.colors.base00;
+        "col.active_border" = "0xaa" + config.lib.stylix.colors.base05;
+
+        "col.inactive_border" = "0xaa" + config.lib.stylix.colors.base03;
 
         gaps_in = 7;
         gaps_out = 7;
 
         allow_tearing = true;
+      };
+
+      cursor = {
+        no_warps = true;
+        inactive_timeout = 30;
       };
 
       decoration = {
@@ -71,7 +92,7 @@
           ignore_opacity = true;
           noise = 0.1;
           contrast = 1.1;
-          brightness = 1.8;
+          brightness = if (config.stylix.polarity == "dark") then 0.8 else 1.15;
           xray = true;
         };
         drop_shadow = true;
@@ -79,10 +100,7 @@
         shadow_offset = "0 8";
         shadow_range = 50;
         shadow_render_power = 3;
-        blurls = [
-          "lockscreen"
-          "popup"
-        ];
+        blurls = [ "lockscreen" "popup" ];
       };
 
       input = {
@@ -116,6 +134,7 @@
           "winIn, 0.1, 1.1, 0.1, 1.1"
           "winOut, 0.3, -0.3, 0, 1"
           "liner, 1, 1, 1, 1"
+          "linear, 0, 0, 1.0, 1.0"
         ];
         animation = [
           "windows, 1, 6, wind, slide"
@@ -135,17 +154,16 @@
         no_gaps_when_only = false;
       };
 
-      master = {
-        new_is_master = true;
-      };
+      master = { new_is_master = true; };
 
       env = [
+        "XDG_CURRENT_DESKTOP,Hyprland"
         "XDG_SESSION_TYPE,wayland"
         "XDG_SESSION_DESKTOP,Hyprland"
 
-        "GDK_BACKEND,wayland"
+        "GDK_BACKEND,wayland,x11,*"
         "WLR_DRM_DEVICES,/dev/dri/card1:/dev/dri/card0"
-        "QT_QPA_PLATFORM,wayland"
+        "QT_QPA_PLATFORM,wayland;xcb"
         "QT_QPA_PLATFORMTHEME,qt5ct"
         "QT_WAYLAND_DISABLE_WINDOWDECORATION,1"
         "QT_AUTO_SCREEN_SCALE_FACTOR,1"
@@ -155,43 +173,54 @@
         "WLR_NO_HARDWARE_CURSORS,1"
 
         "WLR_DRM_NO_ATOMIC,0"
-        "LIBVA_DRIVER_NAME,nvidia"
-        "GBM_BACKEND,nvidia-drm"
-        "__GLX_VENDOR_LIBRARY_NAME,nvidia"
-        "__NV_PRIME_RENDER_OFFLOAD,1"
-        "NVD_BACKEND,direct"
-        "PROTON_ENABLE_NGX_UPDATER,1"
-        "__GL_MaxFramesAllowed,1"
-        "__VK_LAYER_NV_optimus,NVIDIA_only"
 
         "MOZ_DISABLE_RDD_SANDBOX,1"
         "MOZ_ENABLE_WAYLAND,1"
         "ELECTRON_OZONE_PLATFORM_HINT,auto"
       ];
-#  _              _     _           _
-# | | _____ _   _| |__ (_)_ __   __| |___
-# | |/ / _ | | | | '_ \| | '_ \ / _` / __|
-# |   |  __| |_| | |_) | | | | | (_| \__ \
-# |_|\_\___|\__, |_.__/|_|_| |_|\__,_|___/
-#           |___/
-#   KEYBINDS
+      #  _              _     _           _
+      # | | _____ _   _| |__ (_)_ __   __| |___
+      # | |/ / _ | | | | '_ \| | '_ \ / _` / __|
+      # |   |  __| |_| | |_) | | | | | (_| \__ \
+      # |_|\_\___|\__, |_.__/|_|_| |_|\__,_|___/
+      #           |___/
+      #   KEYBINDS
       "$mod" = "SUPER";
 
+      group = {
+        groupbar = {
+          enabled = true;
+          scrolling = true;
+          render_titles = false;
+          height = 1;
+          gradients = true;
+          "col.active" = "rgb(${config.lib.stylix.colors.base0E})" + " " + "rgb(${config.lib.stylix.colors.base0B})" + " " + "270deg";
+          "col.inactive" = "0xaa" + config.lib.stylix.colors.base03;
+        };
+        "col.border_active" = "0xaa" + config.lib.stylix.colors.base05;
+        "col.border_inactive" = "0xaa" + config.lib.stylix.colors.base03;
+      };
       bind = [
         "$mod,          SPACE,      fullscreen, 1"
-        "$modSHIFT,     SPACE,      fullscreen,"
+        "$modSHIFT,     SPACE,      fullscreen,0"
 
-       ("$mod,          RETURN,     exec," + userSettings.term)
+        ("$mod,          RETURN,     exec," + userSettings.term)
 
         "$modCTRL,      R,          exec, killall .waybar-wrapped && waybar & disown"
 
-       ("$mod,          A,          exec," + userSettings.spawnEditor)
+        ("$mod,          A,          exec," + userSettings.spawnEditor)
 
         # Browse the seas
-       ("$mod,          S,          exec," + userSettings.browser)
+        ("$mod,          S,          exec," + userSettings.browser)
         "$modCTRL,      S,          exec, container-open" # this one only works for qutebrowser
 
-        "$mod,          E,  exec, fuzzel"
+        "$mod,          SUPER_L,    exec, nwggrid-wrapper"
+        "$mod,          W,          exec, nwg-dock-wrapper"
+        "$mod,          SUPER_R,    hyprexpo:expo, toggle"
+        "$mod,          APOSTROPHE, togglegroup"
+        "$mod,          COMMA,      changegroupactive, b"
+        "$mod,          PERIOD,     changegroupactive, f"
+        "$mod,          E,          exec, fuzzel"
         "$mod,          X,          exec, fnottctl dismiss"
         "$modSHIFT,     X,          exec, fnottctl dismiss all"
         "$mod,          Q,          killactive"
@@ -199,8 +228,16 @@
         "$modSHIFT,     T,          workspaceopt, allfloat"
         "$mod,          Y,          togglesplit, #dwindle"
         "$mod,          P,          pseudo, #dwindle"
-        "$mod,          COMMA,      centerwindow"
+        "$mod,          C,          centerwindow"
         "$mod,          M,          pin"
+        "$mod,          R,          exec, phoenix refresh"
+
+        # Workspace-window overview ( hycov )
+        "$mod,          TAB,        hycov:toggleoverview"
+        "$mod,          LEFT,       hycov:movefocus,leftcross"
+        "$mod,          RIGHT,      hycov:movefocus,rightcross"
+        "$mod,          UP,         hycov:movefocus,upcross"
+        "$mod,          DOWN,       hycov:movefocus,downcross"
 
         # Media keys to navigate the soundwaves. Get it? soundWAVES, like the theme is pirate speak and they-
         ",              xf86audiolowervolume, exec, pamixer -d 5"
@@ -236,19 +273,19 @@
         "$modSHIFT,     RIGHT,      moveWindow, r"
 
         # Move 'round the workspaces
-        "$mod,          1,          workspace, 1"
-        "$mod,          2,          workspace, 2"
-        "$mod,          3,          workspace, 3"
-        "$mod,          4,          workspace, 4"
-        "$mod,          5,          workspace, 5"
-        "$mod,          6,          workspace, 6"
-        "$mod,          7,          workspace, 7"
-        "$mod,          8,          workspace, 8"
-        "$mod,          9,          workspace, 9"
-        "$mod,        BRACKETRIGHT, workspace, e+1"
-        "$mod,        BRACKETLEFT,  workspace, e-1"
-        "$mod,          mouse_down, workspace, e+1"
-        "$mod,          mouse_up,   workspace, e-1"
+        "$mod,          1,          focusworkspaceoncurrentmonitor, 1"
+        "$mod,          2,          focusworkspaceoncurrentmonitor, 2"
+        "$mod,          3,          focusworkspaceoncurrentmonitor, 3"
+        "$mod,          4,          focusworkspaceoncurrentmonitor, 4"
+        "$mod,          5,          focusworkspaceoncurrentmonitor, 5"
+        "$mod,          6,          focusworkspaceoncurrentmonitor, 6"
+        "$mod,          7,          focusworkspaceoncurrentmonitor, 7"
+        "$mod,          8,          focusworkspaceoncurrentmonitor, 8"
+        "$mod,          9,          focusworkspaceoncurrentmonitor, 9"
+        "$mod,        BRACKETRIGHT, exec, hyprnome"
+        "$mod,        BRACKETLEFT,  exec, hyprnome --previous"
+        "$mod,          mouse_down, exec, hyprnome"
+        "$mod,          mouse_up,   exec, hyprnome --previous"
 
         # Move windows 'tween workspaces
         "$modSHIFT,     1,          moveToWorkspace, 1"
@@ -274,8 +311,9 @@
 
         # Here be the scratchpad bindings, arr
         "$mod,          Z,          exec, pypr toggle term && hyprctl dispatch bringactivetotop"
-        "$mod,          F,          exec, pypr toggle ranger && hyprctl dispatch bringactivetotop"
-        "$mod,          N,          exec, pypr toggle musikcube && hyprctl dispatch bringactivetotop"
+        "$mod,          F,          exec, pypr toggle yazi && hyprctl dispatch bringactivetotop"
+        "$mod,          N,          exec, pypr toggle numbat && hyprctl dispatch bringactivetotop"
+        "$mod,          M,          exec, pypr toggle musikcube && hyprctl dispatch bringactivetotop"
         "$mod,          B,          exec, pypr toggle btm && hyprctl dispatch bringactivetotop"
         "$mod,          code:172,   exec, pypr toggle pavucontrol && hyprctl dispatch bringactivetotop"
       ];
@@ -299,14 +337,16 @@
       ];
       "$scratchpadsize" = "size 80% 85%";
 
-      "$scratchpad"     = "class:^(scratchpad)$";
-      "$pavucontrol"    = "class:^(pavucontrol)$";
-#           _           _                          _
-# __      _(_)_ __   __| | _____      ___ __ _   _| | ___ ___
-# \ \ /\ / | | '_ \ / _` |/ _ \ \ /\ / | '__| | | | |/ _ / __|
-#  \ V  V /| | | | | (_| | (_) \ V  V /| |  | |_| | |  __\__ \
-#   \_/\_/ |_|_| |_|\__,_|\___/ \_/\_/ |_|   \__,_|_|\___|___/
-#   WINDOWRULES
+      "$scratchpad" = "class:^(scratchpad)$";
+      "$pavucontrol" = "class:^(pavucontrol)$";
+      "$savetodisk" = "class:^(Save to Disk)$";
+      "$miniframe" = "title:\*Minibuf.*";
+      #           _           _                          _
+      # __      _(_)_ __   __| | _____      ___ __ _   _| | ___ ___
+      # \ \ /\ / | | '_ \ / _` |/ _ \ \ /\ / | '__| | | | |/ _ / __|
+      #  \ V  V /| | | | | (_| | (_) \ V  V /| |  | |_| | |  __\__ \
+      #   \_/\_/ |_|_| |_|\__,_|\___/ \_/\_/ |_|   \__,_|_|\___|___/
+      #   WINDOWRULES
       # Would some 'o ye wipe the darn windows? I'm stretching this pirate thing alot
       windowrulev2 = [
         "float,$scratchpad"
@@ -314,11 +354,24 @@
         "workspace special silent,$scratchpad"
         "center,$scratchpad"
 
+      # Pavucontrol
         "float,$pavucontrol"
         "size 86% 40%,$pavucontrol"
         "move 50% 6%,$pavucontrol"
         "workspace special silent,$pavucontrol"
         "opacity 0.80,$pavucontrol"
+
+      # Savetodisk
+        "float,$savetodisk"
+        "size 70% 75%,$savetodisk"
+        "center,$savetodisk"
+
+      # Miniframe
+        "float,$miniframe"
+        "size 64% 50%,$miniframe"
+        "move 18% 25%,$miniframe"
+        "animation popin 1 20,$miniframe"
+
 
         "opacity 0.80,title:ORUI"
         "opacity 0.80,title:Heimdall"
@@ -327,28 +380,111 @@
         "opacity 0.70,title:^(New Tab - LibreWolf)$"
         "opacity 0.80,title:^(New Tab - Brave)$"
         "opacity 0.65,title:^(My Local Dashboard Awesome Homepage - qutebrowser)$"
-        "opacity 0.65,title:\[.*\] - My Local Dashboard Awesome Homepage"
+        "opacity 0.65,title:[.*] - My Local Dashboard Awesome Homepage"
         "opacity 0.90,class:^(org.keepassxc.KeePassXC)$"
         "noblur,class:^(waybar)$"
         "opacity 0.70,class:^(waybar)$"
-        "immediate, class:^(Team Fortress 2)$"
-        "immediate, class:^(Cult of The Lamb)"
-        "immediate, class:^(Deep Rock Galactic)"
-        "immediate, class:^(Hyper Demon)$"
-       #"immediate, class:^(Doom)$"
       ];
+      plugin = {
+        hyprtrails = {
+          color = "rgba(${config.lib.stylix.colors.base08}55)";
+        };
+        hycov = {
+          overview_gappo = 60;# gaps width from screen edge
+          overview_gappi = 24; # gaps width from clients
+          enable_hotarea = 0; # enable mouse cursor hotarea, when cursor enter hotarea, it will toggle overview
+          enable_click_action = 1; # enable mouse left button jump and right button kill in overview mode
+          hotarea_monitor = "all"; # monitor name which hotarea is in, default is all
+          hotarea_pos = 1; # position of hotarea (1: bottom left, 2: bottom right, 3: top left, 4: top right)
+          hotarea_size = 10; # hotarea size, 10x10
+          swipe_fingers = 3; # finger number of gesture,move any directory
+          move_focus_distance = 100; # distance for movefocus,only can use 3 finger to move
+          enable_gesture = 0; # enable gesture
+          auto_exit = 1; # enable auto exit when no client in overview
+          auto_fullscreen = 0; # auto make active window maximize after exit overview
+          only_active_workspace = 0; # only overview the active workspace
+          only_active_monitor = 0; # only overview the active monitor
+          enable_alt_release_exit = 0; # alt swith mode arg,see readme for detail
+          alt_replace_key = "Super_L"; # alt swith mode arg,see readme for detail
+          alt_toggle_auto_next = 0; # auto focus next window when toggle overview in alt swith mode
+          click_in_cursor = 1; # when click to jump,the target windwo is find by cursor, not the current foucus window.
+          hight_of_titlebar = 0; # height deviation of title bar height
+          show_special = 0; # show windwos in special workspace in overview.
+        };
+        hyprexpo = {
+          columns = 5;
+          gap_size = 5;
+          bg_col = "rgb(${config.lib.stylix.colors.base00})";
+          workspace_method = "first 1"; # [center/first] [workspace] e.g. first 1 or center m+1
+
+          enable_gesture = true; # laptop touchpad
+          gesture_fingers = 3;  # 3 or 4
+          gesture_distance = 300; # how far is the "max"
+          gesture_positive = true; # positive = swipe down. Negative = swipe up.
+        };
+      };
     };
   };
-
-  home.packages = with pkgs; [
+  home.packages = (with pkgs; [
     alacritty
     kitty
-    mc
     feh
     killall
     polkit_gnome
+    nwg-launchers
+    papirus-icon-theme
+    (pkgs.writeScriptBin "nwggrid-wrapper" ''
+      #!/bin/sh
+      if pgrep -x "nwggrid-server" > /dev/null
+      then
+        nwggrid -client
+      else
+        GDK_PIXBUF_MODULE_FILE=${pkgs.librsvg}/lib/gdk-pixbuf-2.0/2.10.0/loaders.cache nwggrid-server -layer-shell-exclusive-zone -1 -g adw-gtk3 -o 0.55 -b ${config.lib.stylix.colors.base00}
+      fi
+    '')
     libva-utils
+    libinput-gestures
     gsettings-desktop-schemas
+    (pkgs.makeDesktopItem {
+      name = "nwggrid";
+      desktopName = "Application Launcher";
+      exec = "nwggrid-wrapper";
+      terminal = false;
+      type = "Application";
+      noDisplay = true;
+      icon = "/home/" + userSettings.username
+        + "/.local/share/pixmaps/hyprland-logo-stylix.svg";
+    })
+    (pyprland.overrideAttrs (oldAttrs: {
+      src = fetchFromGitHub {
+        owner = "hyprland-community";
+        repo = "pyprland";
+        rev = "refs/tags/2.2.17";
+        hash = "sha256-S1bIIazrBWyjF8tOcIk0AwwWq9gbpTKNsjr9iYA5lKk=";
+      };
+    }))
+    (hyprnome.override (oldAttrs: {
+      rustPlatform = oldAttrs.rustPlatform // {
+        buildRustPackage = args:
+          oldAttrs.rustPlatform.buildRustPackage (args // {
+            pname = "hyprnome";
+            version = "unstable-2024-05-06";
+            src = fetchFromGitHub {
+              owner = "donovanglover";
+              repo = "hyprnome";
+              rev = "f185e6dbd7cfcb3ecc11471fab7d2be374bd5b28";
+              hash = "sha256-tmko/bnGdYOMTIGljJ6T8d76NPLkHAfae6P6G2Aa2Qo=";
+            };
+            cargoDeps = oldAttrs.cargoDeps.overrideAttrs (oldAttrs: rec {
+              name = "${pname}-vendor.tar.gz";
+              inherit src;
+              outputHash =
+                "sha256-cQwAGNKTfJTnXDI3IMJQ2583NEIZE7GScW7TsgnKrKs=";
+            });
+            cargoHash = "sha256-cQwAGNKTfJTnXDI3IMJQ2583NEIZE7GScW7TsgnKrKs=";
+          });
+      };
+    }))
     gnome.zenity
     wlr-randr
     wtype
@@ -356,11 +492,10 @@
     wl-clipboard
     hyprland-protocols
     hyprpicker
-    swayidle
-    swaybg
+    hypridle
+    hyprpaper
     fnott
     fuzzel
-    wofi
     keepmenu
     pinentry-gnome3
     wev
@@ -380,10 +515,32 @@
       #!/bin/sh
       imgname="/tmp/screenshot-ocr-$(date +%Y%m%d%H%M%S).png"
       txtname="/tmp/screenshot-ocr-$(date +%Y%m%d%H%M%S)"
-      txtfname="/tmp/screenshot-ocr-$(date +%Y%m%d%H%M%S).txt"
+      txtfname=$txtname.txt
       grim -g "$(slurp)" $imgname;
       tesseract $imgname $txtname;
       wl-copy -n < $txtfname
+    '')
+    (pkgs.writeScriptBin "nwg-dock-wrapper" ''
+      #!/bin/sh
+      if pgrep -x ".nwg-dock-hyprl" > /dev/null
+      then
+        nwg-dock-hyprland
+      else
+        nwg-dock-hyprland -f -x -i 64 -nolauncher -a start -ml 8 -mr 8 -mb 8
+      fi
+    '')
+    (pkgs.writeScriptBin "hypr-element-start" ''
+      #!/usr/bin/env sh
+      sleep 6 && element-desktop --hidden
+    '')
+    (pkgs.writeScriptBin "hypr-element" ''
+      #!/bin/sh
+      if hyprctl clients | grep "class: Element" > /dev/null
+      then
+        hyprctl dispatch closewindow Element
+      else
+        element-desktop
+      fi
     '')
     (pkgs.writeScriptBin "sct" ''
       #!/bin/sh
@@ -402,10 +559,8 @@
         if pgrep -x .obs-wrapped > /dev/null;
           then
             pkill -STOP fnott;
-            #emacsclient --eval "(org-yaap-mode 0)";
           else
             pkill -CONT fnott;
-            #emacsclient --eval "(if (not org-yaap-mode) (org-yaap-mode 1))";
         fi
         sleep 10;
       done
@@ -415,191 +570,192 @@
       if pgrep -x nixos-rebuild > /dev/null || pgrep -x home-manager > /dev/null || pgrep -x kdenlive > /dev/null || pgrep -x FL64.exe > /dev/null || pgrep -x blender > /dev/null || pgrep -x flatpak > /dev/null;
       then echo "Shouldn't suspend"; sleep 10; else echo "Should suspend"; systemctl suspend; fi
     '')
-    (pkgs.writeScriptBin "hyprworkspace" ''
-      #!/bin/sh
-      # from https://github.com/taylor85345/hyprland-dotfiles/blob/master/hypr/scripts/workspace
-      monitors=/tmp/hypr/monitors_temp
-      hyprctl monitors > $monitors
-
-      if [[ -z $1 ]]; then
-        workspace=$(grep -B 5 "focused: no" "$monitors" | awk 'NR==1 {print $3}')
-      else
-        workspace=$1
-      fi
-
-      activemonitor=$(grep -B 11 "focused: yes" "$monitors" | awk 'NR==1 {print $2}')
-      passivemonitor=$(grep  -B 6 "($workspace)" "$monitors" | awk 'NR==1 {print $2}')
-      #activews=$(grep -A 2 "$activemonitor" "$monitors" | awk 'NR==3 {print $1}' RS='(' FS=')')
-      passivews=$(grep -A 6 "Monitor $passivemonitor" "$monitors" | awk 'NR==3 {print $1}' RS='(' FS=')')
-
-      if [[ $workspace -eq $passivews ]] && [[ $activemonitor != "$passivemonitor" ]]; then
-       hyprctl dispatch workspace "$workspace" && hyprctl dispatch swapactiveworkspaces "$activemonitor" "$passivemonitor" && hyprctl dispatch workspace "$workspace"
-        echo $activemonitor $passivemonitor
-      else
-        hyprctl dispatch moveworkspacetomonitor "$workspace $activemonitor" && hyprctl dispatch workspace "$workspace"
-      fi
-
-      exit 0
-
-    '')
-    (pkgs.python3Packages.buildPythonPackage rec {
-      pname = "pyprland";
-      version = "1.4.1";
-      src = pkgs.fetchPypi {
-        inherit pname version;
-        sha256 = "sha256-JRxUn4uibkl9tyOe68YuHuJKwtJS//Pmi16el5gL9n8=";
-      };
-      format = "pyproject";
-      propagatedBuildInputs = with pkgs; [
-        python3Packages.setuptools
-        python3Packages.poetry-core
-        poetry
-      ];
-      doCheck = false;
+    (pkgs.makeDesktopItem {
+      name = "emacsclientnewframe";
+      desktopName = "Emacs Client New Frame";
+      exec = "emacsclient -c -a emacs";
+      terminal = false;
+      icon = "emacs";
+      type = "Application";
     })
-  ];
-  home.file.".config/hypr/pyprland.json".text = ''
-    {
-      "pyprland": {
-        "plugins": ["scratchpads", "magnify"]
-      },
-      "scratchpads": {
-        "term": {
-          "command": "alacritty --class scratchpad",
-          "margin": 50
-        },
-        "ranger": {
-          "command": "kitty --class scratchpad -e ranger",
-          "margin": 50
-        },
-        "musikcube": {
-          "command": "alacritty --class scratchpad -e musikcube",
-          "margin": 50
-        },
-        "btm": {
-          "command": "alacritty --class scratchpad -e btm",
-          "margin": 50
-        },
-        "geary": {
-          "command": "geary",
-          "margin": 50
-        },
-        "pavucontrol": {
-          "command": "pavucontrol",
-          "margin": 50,
-          "unfocus": "hide",
-          "animation": "fromTop"
-        }
-      }
+  ]) ++ (with pkgs-hyprland; [ hyprlock ]) ++ (with pkgs-nwg-dock-hyprland;
+    [
+      (nwg-dock-hyprland.overrideAttrs
+        (oldAttrs: { patches = ./patches/noactiveclients.patch; }))
+    ]);
+   home.file.".config/hypr/hypridle.conf".text = ''
+    general {
+      lock_cmd = pgrep hyprlock || hyprlock
+      before_sleep_cmd = loginctl lock-session
+      ignore_dbus_inhibit = false
     }
+
+    listener {
+      timeout = 300 # in seconds
+      on-timeout = loginctl lock-session
+    }
+    listener {
+      timeout = 600 # in seconds
+      on-timeout = systemctl suspend
+    }
+  '';
+  home.file.".config/hypr/hyprlock.conf".text = ''
+    background {
+      monitor =
+      path = screenshot
+
+      # all these options are taken from hyprland, see https://wiki.hyprland.org/Configuring/Variables/#blur for explanations
+      blur_passes = 4
+      blur_size = 5
+      noise = 0.0117
+      contrast = 0.8916
+      brightness = 0.8172
+      vibrancy = 0.1696
+      vibrancy_darkness = 0.0
+    }
+
+    # doesn't work yet
+    image {
+      monitor =
+      path = /home/emmet/.dotfiles/user/wm/hyprland/nix-dark.png
+      size = 150 # lesser side if not 1:1 ratio
+      rounding = -1 # negative values mean circle
+      border_size = 0
+      rotate = 0 # degrees, counter-clockwise
+
+      position = 0, 200
+      halign = center
+      valign = center
+    }
+
+    input-field {
+      monitor =
+      size = 200, 50
+      outline_thickness = 3
+      dots_size = 0.33 # Scale of input-field height, 0.2 - 0.8
+      dots_spacing = 0.15 # Scale of dots' absolute size, 0.0 - 1.0
+      dots_center = false
+      dots_rounding = -1 # -1 default circle, -2 follow input-field rounding
+      outer_color = rgb('' + config.lib.stylix.colors.base07-rgb-r + ","
+    + config.lib.stylix.colors.base07-rgb-g + ", "
+    + config.lib.stylix.colors.base07-rgb-b + ''
+      )
+            inner_color = rgb('' + config.lib.stylix.colors.base00-rgb-r + ","
+    + config.lib.stylix.colors.base00-rgb-g + ", "
+    + config.lib.stylix.colors.base00-rgb-b + ''
+      )
+            font_color = rgb('' + config.lib.stylix.colors.base07-rgb-r + ","
+    + config.lib.stylix.colors.base07-rgb-g + ", "
+    + config.lib.stylix.colors.base07-rgb-b + ''
+      )
+            fade_on_empty = true
+            fade_timeout = 1000 # Milliseconds before fade_on_empty is triggered.
+            placeholder_text = <i>Input Password...</i> # Text rendered in the input box when it's empty.
+            hide_input = false
+            rounding = -1 # -1 means complete rounding (circle/oval)
+            check_color = rgb('' + config.lib.stylix.colors.base0A-rgb-r + ","
+    + config.lib.stylix.colors.base0A-rgb-g + ", "
+    + config.lib.stylix.colors.base0A-rgb-b + ''
+      )
+            fail_color = rgb('' + config.lib.stylix.colors.base08-rgb-r + ","
+    + config.lib.stylix.colors.base08-rgb-g + ", "
+    + config.lib.stylix.colors.base08-rgb-b + ''
+      )
+            fail_text = <i>$FAIL <b>($ATTEMPTS)</b></i> # can be set to empty
+            fail_transition = 300 # transition time in ms between normal outer_color and fail_color
+            capslock_color = -1
+            numlock_color = -1
+            bothlock_color = -1 # when both locks are active. -1 means don't change outer color (same for above)
+            invert_numlock = false # change color if numlock is off
+            swap_font_color = false # see below
+
+            position = 0, -20
+            halign = center
+            valign = center
+          }
+
+          label {
+            monitor =
+            text = Hello, ${userSettings.name}
+            color = rgb('' + config.lib.stylix.colors.base07-rgb-r + ","
+    + config.lib.stylix.colors.base07-rgb-g + ", "
+    + config.lib.stylix.colors.base07-rgb-b + ''
+      )
+            font_size = 25
+            font_family = '' + userSettings.font + ''
+
+          rotate = 0 # degrees, counter-clockwise
+
+          position = 0, 160
+          halign = center
+          valign = center
+        }
+
+        label {
+          monitor =
+          text = $TIME
+          color = rgb('' + config.lib.stylix.colors.base07-rgb-r + ","
+    + config.lib.stylix.colors.base07-rgb-g + ", "
+    + config.lib.stylix.colors.base07-rgb-b + ''
+      )
+            font_size = 20
+            font_family = Intel One Mono
+            rotate = 0 # degrees, counter-clockwise
+
+            position = 0, 80
+            halign = center
+            valign = center
+          }
+    '';
+  home.file.".config/hypr/pyprland.toml".text = ''
+    [pyprland]
+    plugins = ["scratchpads", "magnify"]
+
+    [scratchpads.term]
+    command = "kitty --class scratchpad"
+    margin = 50
+    animation = "fromBottom"
+
+    [scratchpads.yazi]
+    command = "kitty --class scratchpad -e yazi"
+    margin = 100
+    animation = "fromTop"
+
+    [scratchpads.numbat]
+    command = "alacritty --class scratchpad -e numbat"
+    margin = 50
+    animation = "fromTop"
+
+    [scratchpads.musikcube]
+    command = "alacritty --class scratchpad -e musikcube"
+    margin = 50
+
+    [scratchpads.btm]
+    command = "alacritty --class scratchpad -e btm"
+    margin = 50
+    animation = "fromLeft"
+
+    [scratchpads.pavucontrol]
+    command = "pavucontrol"
+    margin = 50
+    unfocus = "hide"
+    animation = "fromTop"
   '';
 
-  home.file.".config/gtklock/style.css".text = ''
-    window {
-      background-image: url("''+config.stylix.image+''");
-      background-size: auto 100%;
-    }
+ home.file.".config/libinput-gestures.conf".text = ''
+    gesture swipe up 3	hyprctl dispatch hycov:toggleoverview
+    gesture swipe down 3	nwggrid-wrapper
+
+    gesture swipe right 3	hyprnome
+    gesture swipe left 3	hyprnome --previous
+    gesture swipe up 4	hyprctl dispatch movewindow u
+    gesture swipe down 4	hyprctl dispatch movewindow d
+    gesture swipe left 4	hyprctl dispatch movewindow l
+    gesture swipe right 4	hyprctl dispatch movewindow r
+    gesture pinch in	hyprctl dispatch fullscreen 1
+    gesture pinch out	hyprctl dispatch fullscreen 1
   '';
+
   services.udiskie.enable = true;
   services.udiskie.tray = "always";
-  programs.swaylock = {
-    enable = true;
-    package = pkgs.swaylock-effects;
-    settings = {
-      clock = true;
-      color = "#"+config.lib.stylix.colors.base00;
-      inside-color = "#"+config.lib.stylix.colors.base00+"cc";
-      inside-caps-lock-color = "#"+config.lib.stylix.colors.base09;
-      inside-clear-color = "#"+config.lib.stylix.colors.base0A;
-      inside-wrong-color = "#"+config.lib.stylix.colors.base08;
-      inside-ver-color = "#"+config.lib.stylix.colors.base0D;
-      line-color = "#"+config.lib.stylix.colors.base00;
-      line-caps-lock-color = "#"+config.lib.stylix.colors.base00;
-      line-clear-color = "#"+config.lib.stylix.colors.base00;
-      line-wrong-color = "#"+config.lib.stylix.colors.base00;
-      line-ver-color = "#"+config.lib.stylix.colors.base00;
-      ring-color = "#"+config.lib.stylix.colors.base00;
-      ring-caps-lock-color = "#"+config.lib.stylix.colors.base09;
-      ring-clear-color = "#"+config.lib.stylix.colors.base0A;
-      ring-wrong-color = "#"+config.lib.stylix.colors.base08;
-      ring-ver-color = "#"+config.lib.stylix.colors.base0D;
-      text-color = "#"+config.lib.stylix.colors.base00;
-      key-hl-color = "#"+config.lib.stylix.colors.base0B;
-      font = config.stylix.fonts.monospace.name;
-      font-size = 20;
-      fade-in = 1;
-      grace = 5;
-      grace-no-mouse = false;
-      grace-no-touch = false;
-      timestr = "%I:%M%p";
-      datestr = "%a, %d %b-%y";
-      indicator = true;
-      indicator-radius = 200;
-      indicator-thickness = 20;
-      show-failed-attempts = true;
-      line-uses-ring = false;
-      ignore-empty-password = true;
-      screenshots = true;
-      effect-blur = "10x10";
-    };
-  };
-  programs.fuzzel.enable = true;
-  programs.fuzzel.settings = {
-    main = {
-      font = userSettings.font + ":size=13";
-      terminal = "${pkgs.alacritty}/bin/alacritty";
-    };
-    colors = {
-      background = config.lib.stylix.colors.base00 + "e6";
-      text = config.lib.stylix.colors.base07 + "ff";
-      match = config.lib.stylix.colors.base05 + "ff";
-      selection = config.lib.stylix.colors.base08 + "ff";
-      selection-text = config.lib.stylix.colors.base00 + "ff";
-      selection-match = config.lib.stylix.colors.base05 + "ff";
-      border = config.lib.stylix.colors.base08 + "ff";
-    };
-    border = {
-      width = 3;
-      radius = 7;
-    };
-  };
-  services.fnott.enable = true;
-  services.fnott.settings = {
-    main = {
-      anchor = "bottom-right";
-      stacking-order = "top-down";
-      min-width = 400;
-      title-font = userSettings.font + ":size=14";
-      summary-font = userSettings.font + ":size=12";
-      body-font = userSettings.font + ":size=11";
-      border-size = 0;
-    };
-    low = {
-      background = config.lib.stylix.colors.base00 + "e6";
-      title-color = config.lib.stylix.colors.base03 + "ff";
-      summary-color = config.lib.stylix.colors.base03 + "ff";
-      body-color = config.lib.stylix.colors.base03 + "ff";
-      idle-timeout = 150;
-      max-timeout = 30;
-      default-timeout = 8;
-    };
-    normal = {
-      background = config.lib.stylix.colors.base00 + "e6";
-      title-color = config.lib.stylix.colors.base07 + "ff";
-      summary-color = config.lib.stylix.colors.base07 + "ff";
-      body-color = config.lib.stylix.colors.base07 + "ff";
-      idle-timeout = 150;
-      max-timeout = 30;
-      default-timeout = 8;
-    };
-    critical = {
-      background = config.lib.stylix.colors.base00 + "e6";
-      title-color = config.lib.stylix.colors.base08 + "ff";
-      summary-color = config.lib.stylix.colors.base08 + "ff";
-      body-color = config.lib.stylix.colors.base08 + "ff";
-      idle-timeout = 0;
-      max-timeout = 0;
-      default-timeout = 0;
-    };
-  };
-}
+  }
